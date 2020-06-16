@@ -43,6 +43,18 @@ Screen = coordinates
     
     Setting the **Screen** option to Ore or Coordinates will force that screen to only display that.  You should have at least one LCD set to default.
 
+## Script Options
+```
+    private static string OFP_TAG = "OFP";
+    string blackList = "Stone,Ice"; (Case is important)
+    int detectionDistance = 1000;
+    int depositRange=200
+    //Deposit Range is the potential size of a deposit of ore. The Below size is in meters.
+    //If you start getting the same ore deposits tagged with multiple GPS coordinates
+    //then make this number larger.
+    int depositRange = 200
+```
+
 
  # Menu Options
  * Main Page: This is the main menu which allows navigation
