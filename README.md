@@ -43,7 +43,7 @@ Screen = coordinates
     
     Setting the **Screen** option to Ore or Coordinates will force that screen to only display that.  You should have at least one LCD set to default.
 
-## Script Options
+# Script Options
 ```
     private static string OFP_TAG = "OFP";
     string blackList = "Stone,Ice"; (Case is important)
