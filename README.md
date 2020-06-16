@@ -13,7 +13,7 @@
 
  The great thing about Ore Detector Raycast and Ore Finder Plus is that this doesnt "break" the immersion of the game.  This Mod and Script is not over powered.  You, as a player, still have to scan the planet or asteroid there is no "scan the world" button.
 
- ## Usage
+ # Usage
  # Requirements for your vehicle:
  * Ore Detector somewhere on the grid.  Currently only the first one found is used.
  * Programming Block running this script
@@ -63,7 +63,7 @@ Screen = coordinates
  * Logging Data: This screen shows raw data being logged on the distances between ore deposits.  This isnt required but is good for troubleshooting.
  * Clear Data: This option will clear the found list of ore and the coordinates screen.
 
- ## Screen Shots
+ # Screen Shots
  * Menu Screen
  ![Menu](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/menu.png?raw=true)
  
