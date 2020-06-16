@@ -29,20 +29,15 @@
   To configure an LCD to be used by OFP you need to add the OFP tag to its name
   example: MyText Panel [OFP]
   Once this is done a custom data section will be added to that screen allowing you to change its operation
-
-
-
-
-   [OreFinderPlus]
-    ; Edit the below to change how this screen reacts.
-    ; Options:
-    ; default = Allow this screen to navigate all menus
-    ; ore = Always show ore status
-    ; coordinates = Always show coordinate screen
-    Screen = coordinates
-    
-    
-    
+```
+[OreFinderPlus]
+; Edit the below to change how this screen reacts.
+; Options:
+; default = Allow this screen to navigate all menus
+; ore = Always show ore status
+; coordinates = Always show coordinate screen
+Screen = coordinates
+```    
     
     Setting the **Screen** option to Ore or Coordinates will force that screen to only display that.  You should have at least one LCD set to default.
 
