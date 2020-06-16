@@ -38,6 +38,7 @@
     ; coordinates = Always show coordinate screen
     Screen = coordinates
    ```
+    
     Setting the **Screen** option to Ore or Coordinates will force that screen to only display that.  You should have at least one LCD set to default.
 
 
