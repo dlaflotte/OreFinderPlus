@@ -13,27 +13,27 @@
 
  The great thing about Ore Detector Raycast and Ore Finder Plus is that this doesnt "break" the immersion of the game.  This Mod and Script is not over powered.  You, as a player, still have to scan the planet or asteroid there is no "scan the world" button.
 
- ##Usage
- #Requirements for your vehicle:
+ ## Usage
+ # Requirements for your vehicle:
  * Ore Detector somewhere on the grid.  Currently only the first one found is used.
  * Programming Block running this script
  * LCD Panel with the [OFP] designated tag.
 
- #Operation
+ # Operation
  Once the above is met you will need to add a few commands to your hot bar.
  * up - Add the programming block from above to your hot bar with the argument of up.  This will navigate the menu items up
  * down - Add the programming block from above to your hot bar with the argument of down.  This will navigate the menu items down
  * apply - Add the programming block from above to your hot bar with the argument of apply.  This will select the current menu item
  * menu - Add the programming blcok from above to your hot bar with the argument of menu.  This is a quick key to go back to the main menu.
 
- #Menu Options
+ # Menu Options
  * Main Page: This is the main menu which allows navigation
  * Deposits Found: This is a summary screen showing ore found
  * Ore Coordinates: This screen shows all the ore found in GPS coordinates format.  **IMPORTANT** To get these coordinates into your GPS system you will press **K** and navigate to the LCD showing the coordinates.  Click **Edit Text**.  Once that windows opens up the GPS points are automatically added to your GPS system.  Navigate to the **GPS** tab and click **Show on HUD** if you want to see  the location.
  * Logging Data: This screen shows raw data being logged on the distances between ore deposits.  This isnt required but is good for troubleshooting.
  * Clear Data: This option will clear the found list of ore and the coordinates screen.
 
- ##Screen Shots
+ ## Screen Shots
  * Menu Screen
  ![Menu](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/menu.png?raw=true)
  
