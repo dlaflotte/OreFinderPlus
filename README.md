@@ -25,6 +25,21 @@
  * down - Add the programming block from above to your hot bar with the argument of down.  This will navigate the menu items down
  * apply - Add the programming block from above to your hot bar with the argument of apply.  This will select the current menu item
  * menu - Add the programming blcok from above to your hot bar with the argument of menu.  This is a quick key to go back to the main menu.
+  # LCD's
+  To configure an LCD to be used by OFP you need to add the OFP tag to its name
+  example: MyText Panel [OFP]
+  Once this is done a custom data section will be added to that screen allowing you to change its operation
+  ```
+  [OreFinderPlus]
+    ; Edit the below to change how this screen reacts.
+    ; Options:
+    ; default = Allow this screen to navigate all menus
+    ; ore = Always show ore status
+    ; coordinates = Always show coordinate screen
+    Screen = coordinates
+```
+    Setting the **Screen** option to Ore or Coordinates will force that screen to only display that.  You should have at least one LCD set to default.
+
 
  # Menu Options
  * Main Page: This is the main menu which allows navigation
