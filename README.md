@@ -1,5 +1,5 @@
 # OreFinderPlus
-##Description
+## Description
  This is a Space Engineers in-game script for logging ore locations.  Currently the [Ore Detector](https://github.com/malware-dev/MDK-SE/wiki/Sandbox.ModAPI.Ingame.IMyOreDetector) allows a player to "scan" for ore deposits they can mine.
  The small ship block has a distance of 50m while the large ship block has a distance of 150m.  
  Unfortunatly these distances are too short to be useful and it is super easy to miss pockets of ore.  Ore Finder Plus [OFP] leverages the [Ore Detector Raycast](https://steamcommunity.com/sharedfiles/filedetails/?id=1967157772) mod to allow a Raycast collision with the ore from the detector.  In short the mode will allow the Ore Detector to fire a 
