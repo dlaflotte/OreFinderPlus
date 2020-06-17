@@ -10,9 +10,9 @@
 //                 LCD Port Side OFP
 private static string OFP_TAG = "OFP";
 
-//BlackList will allow you to exclude types of ORE.
+//ignoreList will allow you to exclude types of ORE.
 //example: "Stone,Ice"
-string blackList = "Stone";
+string ignoreList = "Stone";
 
 //Detection Distance in meters.  Default set to 1KM
 int detectionDistance = 1000;
@@ -53,10 +53,11 @@ string test;
 
 /* ToDO:
          * Add Better Error Handling and reporting on errors
-         * Make blacklist easy to edit (perhaps in the menu)
+         * Make ignoreList easy to edit (perhaps in the menu)
          * Perhaps add a bootup splash screen
          * Add the ability to "start" and "stop" scanning (just disable the ore detector?
          * Add the ability to broadcast the ore to a channel listener so displays on a remote base can see the ore.  This would also allow for drones to zoom around scanning and have ore results at the base.
+         * Echo data for found deposits to the PB and any errors.
          */
 
 private bool IsKnown(MyDetectedEntityInfo foundOre)
@@ -396,9 +397,9 @@ private void SetupDetector()
     var res = detector.GetValue<MyDetectedEntityInfo>("RaycastResult");
     if (res.TimeStamp == 0)
         throw new Exception("RaycastResult invalid");
-    detector.SetValue("OreBlacklist", blackList);
-    if (detector.GetValue<string>("OreBlacklist") != blackList)
-        throw new Exception("OreBlacklist inequal");
+    detector.SetValue("OreBlacklist", ignoreList);
+    if (detector.GetValue<string>("OreBlacklist") != ignoreList)
+        throw new Exception("OreIgnorelist inequal");
     try
     {
         detector.SetValue("ScanEpoch", 0L);
@@ -417,7 +418,6 @@ public void Main(string argument, UpdateType updateSource)
         MyCommandLine _commandLine = new MyCommandLine();
         if (_commandLine.TryParse(argument))
         {
-            Echo($"Argument ={test}\nScreen={currentScreen}\nSelection={currentSelection}");
             test = _commandLine.Argument(0);
             HandleMenu(_commandLine.Argument(0));
         }
