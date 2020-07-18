@@ -1,9 +1,12 @@
-﻿
-/*Script Author: Onosendai
-         * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
-         * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
-         *          https://steamcommunity.com/workshop/filedetails/?id=1967157772
-        */
+﻿/*Script Author: Onosendai
+          * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
+          * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
+          *          https://steamcommunity.com/workshop/filedetails/?id=1967157772
+   Version: 1.1
+         * Initial version to display and track ore deposits.
+   Version: 1.2
+         * Added support for Better Stone v7.0.3f
+ */
 
 //Tag for Ore Finder Plus to look for on the ore detector or LCD.Either tag the name or custom data
 //   Example Name: LCD Test [OFP]
@@ -27,7 +30,7 @@ int depositRange = 200;
 //*******Dont Touch Below here********
 //************************************
 
-private static double VERSION_NUMBER = 1.1;
+private static double VERSION_NUMBER = 1.2;
 private static string PRODUCT_NAME = "Ore Finder Plus";
 //All the known ore and locations we've found
 List<MyDetectedEntityInfo> DiscoveredOre = new List<MyDetectedEntityInfo>();
@@ -49,7 +52,7 @@ int maxScreen = 4;
 int currentSelection = 1;
 int maxSelection = 4;
 MyIni _ini = new MyIni();
-string test;
+private string test;
 
 /* ToDO:
          * Add Better Error Handling and reporting on errors
@@ -259,58 +262,29 @@ private void WriteToLCD(string text_out, IMyTextSurface screen)
 private void DisplayDepositsFound(IMyTextPanel panel, bool staticScreen = false)
 {
     string deposits = "***** Depoits *****";
-    int iron = 0, stone = 0, nickel = 0, silicon = 0, cobalt = 0, magnesium = 0, silver = 0, gold = 0, uranium = 0, platinum = 0, ice = 0;
+    //Switching over to a dictionary as the "hard coded" list only works with vanilla SE.  Want to mod this to work with any ore detected.
+    Dictionary<string, int> oreForDisplay = new Dictionary<string, int>();
 
     foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
     {
-
-        switch (oreInstance.Name.ToLower())
+        string oreKey = oreInstance.Name;
+        if (oreForDisplay.ContainsKey(oreKey))
         {
-            case "iron":
-                iron++;
-                break;
-            case "stone":
-                stone++;
-                break;
-            case "nickel":
-                nickel++;
-                break;
-            case "silicon":
-                silicon++;
-                break;
-            case "cobalt":
-                cobalt++;
-                break;
-            case "silver":
-                silver++;
-                break;
-            case "gold":
-                gold++;
-                break;
-            case "uranium":
-                uranium++;
-                break;
-            case "platinum":
-                platinum++;
-                break;
-            case "ice":
-                ice++;
-                break;
-            default:
-                break;
+            int amount = oreForDisplay[oreKey];
+            amount += 1;
+            oreForDisplay[oreKey] = amount;
+        }
+        else
+        {
+            oreForDisplay.Add(oreKey, 1);
         }
     }
-    deposits += $"\nIron={iron}";
-    deposits += $"\nStone={stone}";
-    deposits += $"\nNickel={nickel}";
-    deposits += $"\nSilicon={silicon}";
-    deposits += $"\nCobalt={cobalt}";
-    deposits += $"\nMagnesium={magnesium}";
-    deposits += $"\nSilver={silver}";
-    deposits += $"\nGold={gold}";
-    deposits += $"\nUranium={uranium}";
-    deposits += $"\nPlatinum={platinum}";
-    deposits += $"\nIce={ice}";
+    Echo($"Deposit Count: {oreForDisplay.Count()}");
+
+    foreach (KeyValuePair<string, int> orePair in oreForDisplay)
+    {
+        deposits += $"\n{orePair.Key}={orePair.Value}";
+    }
     if (!staticScreen)
         deposits += "\n> Return To Menu";
     WriteToLCD(deposits, panel);
