@@ -81,7 +81,7 @@ Screen = ministatus
 
  ## Screen Shots
  * Menu Screen
- ![Menu](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Menu1.3.PNG.png?raw=true)
+ ![Menu](https://raw.githubusercontent.com/dlaflotte/OreFinderPlus/master/images/Menu1.3.PNG)
  
  * Deposits Found
  ![Deposits](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Deposits%20Found.PNG?raw=true)
