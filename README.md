@@ -2,7 +2,7 @@
 ## Description
  This is a Space Engineers in-game script for logging ore locations.  Currently the [Ore Detector](https://github.com/malware-dev/MDK-SE/wiki/Sandbox.ModAPI.Ingame.IMyOreDetector) allows a player to "scan" for ore deposits they can mine.
  The small ship block has a distance of 50m while the large ship block has a distance of 150m.  
- Unfortunatly these distances are too short to be useful and it is super easy to miss pockets of ore.  Ore Finder Plus [OFP] leverages the [Ore Detector Raycast](https://steamcommunity.com/sharedfiles/filedetails/?id=1967157772) mod to allow a Raycast collision with the ore from the detector.  In short the mode will allow the Ore Detector to fire a 
+ Unfortunately these distances are too short to be useful and it is super easy to miss pockets of ore.  Ore Finder Plus [OFP] leverages the [Ore Detector Raycast](https://steamcommunity.com/sharedfiles/filedetails/?id=1967157772) mod to allow a Raycast collision with the ore from the detector.  In short the mode will allow the Ore Detector to fire a 
  small ray into a material (planet, asteroid, etc) and will report back the ore deposits it hits.  This in-game script creates a logging system around that raycast.
 
  With Ore Finder Plus you can:
@@ -79,6 +79,14 @@ Screen = ministatus
  * Logging Data: This screen shows raw data being logged on the distances between ore deposits.  This isnt required but is good for troubleshooting.
  * Clear Data: This option will clear the found list of ore and the coordinates screen.
 
+ ## Settings Screen Options
+ * OFP Enabled: [True/False] This option will not only disable the ore detector but will also disable the process that happens every tick.  This can be done to allow your ore detector to "store" more charge on its raycast.  It can store upt o 100K distance charge.  This may allow you to do a "single" scan quicker as you have a store of energy.
+ * Scan Mode: (360 Scan, Forward Plane Scan, Forward Scan).
+  * 360 Scan - OFP will scan in a sphere 360 degrees around the ore detector.  To save time there is a default stepping of 18 degrees in the elevation and azimuth.  Azimuth will scan 360 degrees and elevation will scan 180.  This allows for a full sphere of scanning.  
+   * Forward Plane Scan - The forward plane scan will scan from 5 degrees left to 5 degrees right and 5 degrees down to 5 degrees up in the direction the ore detector is facing.  This will create a virtual pyramid of scanning in the forward direction.
+   * Forward Scan - This is the old style of scanning but still included.  This will only send out a beam directly out of the front of the ore detector.  This works well but is hard to line up with ore deposits and its every easy to miss pockets of ore.
+  * Quick Scanning: [True/False] The ore detector has a "charge".  The charge is how far the ray from the raycast can shoot out at a given time.  According to the mod created by Racher it will generate 2.0/10000 meters per tick.  1000 ticks is 1 second.  So every second you can scan about 2K distance.  However OFP fires every 10 ticks and 100 ticks.  SO there is a strong chance that you've used up your charge when you go to fire your next ray.  If you set Quick Scan to False then OFP will wait until you have enough charge to reach your designated distance.   If you set Quick Scan to True then OFP will fire off the scan with whatever charge is available.  The up side of quick scan is that you dont wait for charge and the scan will go faster.   The downside is that you are potentially missing pockets of ore as you arent sending out the full ray.  The way I see this used would be if you're flying around perhaps you quick scan.  But if you have OFP on a base (mobile or not) doing a DEEP scan of an area then keep Quick Scan off to make sure you always fire the ray as far as possible.  For example.  We have a base on the moon.  We've setup a ore detector and OFP.  Set the distance to 5K and did a 360 scan with Quick Scan off.  This may take hours but will give a great understanding of the ore in the area.
+   * Distance: [Default 1000] If you're in the settings menu you can click "apply" to the distance option.   You'll notice that the icon changes next to the Distance menu option.   Now that you've selected this item you can use the standard up and down menu options to change the value up or down by 100m per click.  Once you have the value where you want it then click apply again and you'll deselect this item and it will be set immediately.
  ## Screen Shots
  * Menu Screen
  ![Menu](https://raw.githubusercontent.com/dlaflotte/OreFinderPlus/master/images/Menu1.3.PNG)
