@@ -10,6 +10,18 @@
  * List all GPS coordinates for ore deposits
  * Import all GPS points
  * Increased distances (default 1KM detection range)
+ 
+ V1.3 Features:
+ * Now the ability to edit all settings in the OFP Menu (scan distance, enable/disable, etc)
+ * The script will automatically save and restore settings between sessions
+ * 3 Different Scan modes
+   * Forward Scan - v1.2 default mode which send a 2D ray out the front of the ore detector at the designated distance
+   * 360 Scan - This will scan 360 degrees around the ore detector recording any ore it hits.
+   * Forward Plane Scan - This scan will project a ray from -5 to 5 degrees on the azimuth and -5 to 5 degrees on the elevation creating a pyramid projected from the front of the ore detector.  This is faster than 360 scan but only sees whats in front.
+ * Ability to change scanning speed
+ * New status screen and mini status screen
+ * Tested with Most mods for extending range of the basic ore detector as well as different ore deposits (Like Better Stone) successfully.
+ 
 
  The great thing about Ore Detector Raycast and Ore Finder Plus is that this doesnt "break" the immersion of the game.  This Mod and Script is not over powered.  You, as a player, still have to scan the planet or asteroid there is no "scan the world" button.
 
@@ -24,7 +36,11 @@
  * up - Add the programming block from above to your hot bar with the argument of up.  This will navigate the menu items up
  * down - Add the programming block from above to your hot bar with the argument of down.  This will navigate the menu items down
  * apply - Add the programming block from above to your hot bar with the argument of apply.  This will select the current menu item
- * menu - Add the programming blcok from above to your hot bar with the argument of menu.  This is a quick key to go back to the main menu.
+ * menu - Add the programming block from above to your hot bar with the argument of menu.  This is a quick key to go back to the main menu.
+ * disable - Add the programming block from above to your hot bar with the argument of disable. This will disable OFP and the Ore Detector
+ * enable - Add the programming block from above to your hot bar with the argument of enable. This will enable OFP and the Ore Detector
+ * scan - Add the programming block from above to your hot bar with the argument of scan. This will cause a 1 time scan of the area with your current distance and scan settings.
+ 
   ## LCD's
   To configure an LCD to be used by OFP you need to add the OFP tag to its name
   example: MyText Panel [OFP]
@@ -36,7 +52,9 @@
 ; default = Allow this screen to navigate all menus
 ; ore = Always show ore status
 ; coordinates = Always show coordinate screen
-Screen = coordinates
+; status = shows the status of current (or single) scan
+; ministatus = shows scan status on small screens
+Screen = ministatus
 ```    
 
 
@@ -47,8 +65,6 @@ Screen = coordinates
 ```
     private static string OFP_TAG = "OFP";
     string ignoreList = "Stone,Ice"; (Case is important)
-    int detectionDistance = 1000;
-    int depositRange=200
     //Deposit Range is the potential size of a deposit of ore. The Below size is in meters.
     //If you start getting the same ore deposits tagged with multiple GPS coordinates
     //then make this number larger.
@@ -65,7 +81,7 @@ Screen = coordinates
 
  ## Screen Shots
  * Menu Screen
- ![Menu](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/menu.png?raw=true)
+ ![Menu](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Menu1.3.PNG.png?raw=true)
  
  * Deposits Found
  ![Deposits](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Deposits%20Found.PNG?raw=true)
@@ -76,6 +92,15 @@ Screen = coordinates
  * Logging Data
  ![Logging Data](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Logging%20Data.PNG?raw=true)
 
+ * Status
+ ![Status](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/ScanStatusFull.PNG?raw=true)
+
+ * Settings
+ ![Settings](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/settings.PNG?raw=true)
+
+ * Mini Scan Status
+ ![Mini Scan Status](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/ScanStatusMini.PNG?raw=true)
+ 
  * Clear Data
  ![Clear Data](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Clear%20Data.PNG?raw=true)
 
