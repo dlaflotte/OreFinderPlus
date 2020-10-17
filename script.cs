@@ -18,6 +18,8 @@
                 * Added settings menu for making changes to common configuration options
           Version: 1.4
                 * Better Error handling for when the Ore Detector Raycast mod is not installed.  This will aid in giving direction to users when they subscript to the script.
+          Version: 1.5
+                * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
         */
 
 //Tag for Ore Finder Plus to look for on the ore detector or LCD.Either tag the name or custom data
@@ -65,7 +67,7 @@ Boolean quickScan = true;
 
 //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
 private static bool DEBUGGING = false;
-private static double VERSION_NUMBER = 1.4;
+private static double VERSION_NUMBER = 1.5;
 private static string PRODUCT_NAME = "Ore Finder Plus";
 
 //used to scan 360 degrees around the ore detector
@@ -111,6 +113,7 @@ readonly IMyOreDetector detector;
 readonly IMyTextSurface surface;
 
 List<IMyTextPanel> lcdPanels = new List<IMyTextPanel>();
+List<IMyCockpit> cockpits = new List<IMyCockpit>();
 
 //Menu Handling Options
 int currentScreen = 0;
@@ -181,7 +184,7 @@ private bool IsKnown(MyDetectedEntityInfo foundOre)
     }
     return known;
 }
-private void DisplayCompareAll(IMyTextPanel panel, bool staticScreen = false)
+private void DisplayCompareAll(IMyTextSurface panel, bool staticScreen = false)
 {
     string oreAll = "*** Known Ores Compared ***\n";
     foreach (MyDetectedEntityInfo oreTest in DiscoveredOre)
@@ -215,7 +218,43 @@ private void ClearLCD()
 private void RegisterLCDs()
 {
     List<IMyTextPanel> allPanels = new List<IMyTextPanel>();
+    List<IMyCockpit> allCockpits = new List<IMyCockpit>();
+
+    GridTerminalSystem.GetBlocksOfType(allCockpits);
     GridTerminalSystem.GetBlocksOfType(allPanels);
+
+    foreach (IMyCockpit iCockpit in allCockpits)
+    {
+        if (iCockpit.CustomName.Contains(OFP_TAG))
+        {
+            MyIniParseResult result;
+            _ini.TryParse(iCockpit.CustomData, out result);
+            if (_ini.Get("OreFinderPlus", "OFP_Display").ToString() == "")
+            {
+                //No active ini data so we will set a default
+                iCockpit.CustomData = "[OreFinderPlus]";
+                iCockpit.CustomData += "\n; Edit the below to change how this screen reacts.";
+                iCockpit.CustomData += "\n; Options:";
+                iCockpit.CustomData += "\n; default = Allow this screen to navigate all menus";
+                iCockpit.CustomData += "\n; ore = Always show ore status";
+                iCockpit.CustomData += "\n; coordinates = Always show coordinate screen";
+                iCockpit.CustomData += "\n; status = shows the status of current (or single) scan";
+                iCockpit.CustomData += "\n; ministatus = shows scan status on small screens";
+                iCockpit.CustomData += "\n; settings = screen to set options";
+                iCockpit.CustomData += "\n; :::::EXAMPLE::::";
+                iCockpit.CustomData += "\n; OFP_Display=Enabled   <-- Do not change";
+                iCockpit.CustomData += "\n; OFP@0=default";
+                iCockpit.CustomData += "\n; OFP@2=status";
+                iCockpit.CustomData += "\nOFP_Display = Enabled";
+                iCockpit.CustomData += "\nOFP@0 = default";
+                iCockpit.GetSurface(0).ContentType = ContentType.TEXT_AND_IMAGE;
+            }
+            //Need to capture the entire cockpit as it will have the custom data section for the INI
+            cockpits.Add(iCockpit);
+        }
+    }
+
+
     foreach (IMyTextPanel panel in allPanels)
     {
         if (panel.CustomName.Contains(OFP_TAG))
@@ -242,9 +281,9 @@ private void RegisterLCDs()
             lcdPanels.Add(panel);
         }
     }
-    if (lcdPanels.Count == 0)
+    if (lcdPanels.Count == 0 && cockpits.Count == 0)
     {
-        throw new Exception($"Error: No LCD Panels found with the {OFP_TAG} tag name.");
+        throw new Exception($"Error: No LCD Panels or Cockpits found with the {OFP_TAG} tag name.");
     }
 }
 
@@ -398,6 +437,47 @@ private void HandleMenu(string cmd)
 
 private void RefreshScreens()
 {
+    foreach (IMyCockpit iCockPit in cockpits)
+    {
+        MyIniParseResult result;
+        if (!_ini.TryParse(iCockPit.CustomData, out result))
+            throw new Exception(result.ToString());
+        for (int cPanel = 0; cPanel < iCockPit.SurfaceCount - 1; cPanel++)
+        {
+            string screenType = _ini.Get("OreFinderPlus", $"OFP@{cPanel}").ToString();
+            if (screenType != "")
+            {
+                iCockPit.GetSurface(cPanel).ContentType = ContentType.TEXT_AND_IMAGE;
+                switch (screenType)
+                {
+                    case "default":
+                        ShowScreen(currentScreen, iCockPit.GetSurface(cPanel));
+                        break;
+                    case "menu":
+                        ShowScreen(0, iCockPit.GetSurface(cPanel), true);
+                        break;
+                    case "ore":
+                        ShowScreen(1, iCockPit.GetSurface(cPanel), true);
+                        break;
+                    case "coordinates":
+                        ShowScreen(2, iCockPit.GetSurface(cPanel), true);
+                        break;
+                    case "status":
+                        ShowScreen(4, iCockPit.GetSurface(cPanel), true);
+                        break;
+                    case "ministatus":
+                        ShowScreen(7, iCockPit.GetSurface(cPanel), true, true);
+                        break;
+                    case "settings":
+                        ShowScreen(5, iCockPit.GetSurface(cPanel), true);
+                        break;
+                    default:
+                        ShowScreen(0, iCockPit.GetSurface(cPanel), true);
+                        break;
+                }
+            }
+        }
+    }
     foreach (IMyTextPanel panel in lcdPanels)
     {
         MyIniParseResult result;
@@ -435,7 +515,7 @@ private void RefreshScreens()
 
     }
 }
-private void DisplayMenu(IMyTextPanel panel, bool staticScreen = false)
+private void DisplayMenu(IMyTextSurface panel, bool staticScreen = false)
 {
     string menuSystem = "";
     menuSystem += $"***** {PRODUCT_NAME}: {VERSION_NUMBER} *****";
@@ -448,13 +528,14 @@ private void DisplayMenu(IMyTextPanel panel, bool staticScreen = false)
     WriteToLCD(menuSystem, panel);
 }
 
-private void DisplayMiniScanStatus(IMyTextPanel panel, bool staticScreen = false)
+private void DisplayMiniScanStatus(IMyTextSurface panel, bool staticScreen = false, bool isCockpit = false)
 {
     string scanMiniStatus = "";
     if (disableOFP)
     {
         //Show a disabled screen
-        panel.FontSize = (float)5.5;
+        if (!isCockpit)
+            panel.FontSize = (float)5.5;
         panel.FontColor = Color.Red;
         panel.Alignment = TextAlignment.CENTER;
         scanMiniStatus = "Scan\nDisabled";
@@ -463,7 +544,8 @@ private void DisplayMiniScanStatus(IMyTextPanel panel, bool staticScreen = false
     {
         if (!miniFlash)
         {
-            panel.FontSize = (float)4.5;
+            if (!isCockpit)
+                panel.FontSize = (float)4.5;
             panel.FontColor = Color.White;
             panel.Alignment = TextAlignment.LEFT;
             scanMiniStatus += $"Scans:{scans_Completed}";
@@ -474,7 +556,8 @@ private void DisplayMiniScanStatus(IMyTextPanel panel, bool staticScreen = false
         {
             if (miniFlashTicks < maxMiniFlashTicks)
             {
-                panel.FontSize = (float)5.5;
+                if (!isCockpit)
+                    panel.FontSize = (float)5.5;
                 panel.FontColor = Color.Green;
                 panel.Alignment = TextAlignment.CENTER;
                 scanMiniStatus = "Scan\nComplete";
@@ -482,7 +565,8 @@ private void DisplayMiniScanStatus(IMyTextPanel panel, bool staticScreen = false
             }
             else
             {
-                panel.FontSize = (float)4.5;
+                if (!isCockpit)
+                    panel.FontSize = (float)4.5;
                 panel.FontColor = Color.White;
                 miniFlash = false;
                 miniFlashTicks = 0;
@@ -493,7 +577,8 @@ private void DisplayMiniScanStatus(IMyTextPanel panel, bool staticScreen = false
     if (scanMode == 0)
     {
         //Change the status when the scanmode is direct line
-        panel.FontSize = (float)4.5;
+        if (!isCockpit)
+            panel.FontSize = (float)4.5;
         panel.FontColor = Color.White;
         panel.Alignment = TextAlignment.LEFT;
         scanMiniStatus = $"{OFPScanMode[0]}";
@@ -507,7 +592,7 @@ private void DisplayMiniScanStatus(IMyTextPanel panel, bool staticScreen = false
     WriteToLCD(scanMiniStatus, panel);
 }
 
-private void DisplayScanStatus(IMyTextPanel panel, bool staticScreen = false)
+private void DisplayScanStatus(IMyTextSurface panel, bool staticScreen = false)
 {
     string scanStatus = "";
 
@@ -529,7 +614,7 @@ private void DisplayScanStatus(IMyTextPanel panel, bool staticScreen = false)
     WriteToLCD(scanStatus, panel);
 }
 
-private void DisplaySettings(IMyTextPanel panel, bool staticScreen = false)
+private void DisplaySettings(IMyTextSurface panel, bool staticScreen = false)
 {
     string menuSettings = "";
 
@@ -556,7 +641,7 @@ private void WriteToLCD(string text_out, IMyTextSurface screen)
     }
 }
 
-private void DisplayDepositsFound(IMyTextPanel panel, bool staticScreen = false)
+private void DisplayDepositsFound(IMyTextSurface panel, bool staticScreen = false)
 {
     string deposits = "***** Depoits *****";
     //Switching over to a dictionary as the "hard coded" list only works with vanilla SE.  Want to mod this to work with any ore detected.
@@ -587,7 +672,7 @@ private void DisplayDepositsFound(IMyTextPanel panel, bool staticScreen = false)
     WriteToLCD(deposits, panel);
 }
 
-private void ClearData(IMyTextPanel panel, bool staticScreen = false)
+private void ClearData(IMyTextSurface panel, bool staticScreen = false)
 {
     //Clear all data from the recorded Ores
     string cleared = "***** DATA CLEARED *****";
@@ -597,7 +682,7 @@ private void ClearData(IMyTextPanel panel, bool staticScreen = false)
     scans_Completed = 0;
     WriteToLCD(cleared, panel);
 }
-private void DisplayKnownOreGPS(IMyTextPanel panel, bool staticScreen = false)
+private void DisplayKnownOreGPS(IMyTextSurface panel, bool staticScreen = false)
 {
     string locationGPS = "*** ORE GPS ***";
     foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
@@ -612,7 +697,7 @@ private void DisplayKnownOreGPS(IMyTextPanel panel, bool staticScreen = false)
 
 }
 
-private void ShowScreen(int selection, IMyTextPanel currentPanel, bool staticScreen = false)
+private void ShowScreen(int selection, IMyTextSurface currentPanel, bool staticScreen = false, bool isCockpit = false)
 {
     switch (selection)
     {
@@ -638,7 +723,7 @@ private void ShowScreen(int selection, IMyTextPanel currentPanel, bool staticScr
             ClearData(currentPanel, staticScreen);
             break;
         case 7:
-            DisplayMiniScanStatus(currentPanel, staticScreen);
+            DisplayMiniScanStatus(currentPanel, staticScreen, isCockpit);
             break;
         default:
             DisplayMenu(currentPanel, staticScreen);
