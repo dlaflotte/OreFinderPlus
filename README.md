@@ -113,3 +113,5 @@ Screen = ministatus
  * Clear Data
  ![Clear Data](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Clear%20Data.PNG?raw=true)
 
+ * Cockpit LCDs
+ ![Cockpit LCDs](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/cockpit.PNG?raw=true)
