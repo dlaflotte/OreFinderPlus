@@ -1,4 +1,5 @@
 ﻿
+
 /*Script Author: Onosendai
                  * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
                  * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
@@ -20,6 +21,8 @@
                 * Better Error handling for when the Ore Detector Raycast mod is not installed.  This will aid in giving direction to users when they subscript to the script.
           Version: 1.5
                 * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
+          Version: 1.6
+                * Fixed the scan once functionality and added the scan once item to settings/save/load.
         */
 
 //Tag for Ore Finder Plus to look for on the ore detector or LCD.Either tag the name or custom data
@@ -67,7 +70,7 @@ Boolean quickScan = true;
 
 //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
 private static bool DEBUGGING = false;
-private static double VERSION_NUMBER = 1.5;
+private static double VERSION_NUMBER = 1.6;
 private static string PRODUCT_NAME = "Ore Finder Plus";
 
 //used to scan 360 degrees around the ore detector
@@ -129,7 +132,7 @@ int currentScreen = 0;
 int maxScreen = 6;
 int currentSelection = 1;
 int maxSelection = 6; //Used for the main menu
-int maxSettingsSelection = 5;  //Used for the settings menu
+int maxSettingsSelection = 6;  //Used for the settings menu
 MyIni _ini = new MyIni();
 private string test;
 //Miniflash is for the mini status display.  When mini flash is set to false the status screen will flash "Scan Complete" for x ticks and then go back to showing status.
@@ -181,6 +184,7 @@ private bool IsKnown(MyDetectedEntityInfo foundOre)
     if (!known)
     {
         DiscoveredOre.Add(foundOre);
+        Echo($"{foundOre.Name}, {foundOre.Relationship.ToString()}");
     }
     return known;
 }
@@ -307,14 +311,19 @@ private void HandleSettings()
             scans_Completed = 0;
             break;
         case (3):
+            scanOnce = !scanOnce;
+            if (scanOnce)
+                scans_Completed = 0;
+            break;
+        case (4):
             //Disable/Enable quickscanning
             quickScan = !quickScan;
             break;
-        case (4):
+        case (5):
             //Setting of Distance to scan
             setDistance = !setDistance;
             break;
-        case (5):
+        case (6):
             currentScreen = 0;
             currentSelection = 1;
             break;
@@ -422,8 +431,9 @@ private void HandleMenu(string cmd)
             scanOnce = true;
             disableOFP = false;
             detector.Enabled = true;
-            //Best scan once mode is probably 360 scan.
-            scanMode = 1;
+            //Best scan once mode is probably 360 scan. However let us allow the end-user to use whatever mode they like.
+            //This is set above by default to 360 but can be changed in the menu items.
+            //scanMode = 1;
             flashedOn = 0;
             scans_Completed = 0;
             break;
@@ -554,6 +564,11 @@ private void DisplayMiniScanStatus(IMyTextSurface panel, bool staticScreen = fal
         }
         else
         {
+            if (scanOnce && scans_Completed >= 1)
+            {
+                miniFlashTicks = 0;
+            }
+
             if (miniFlashTicks < maxMiniFlashTicks)
             {
                 if (!isCockpit)
@@ -598,6 +613,7 @@ private void DisplayScanStatus(IMyTextSurface panel, bool staticScreen = false)
 
     scanStatus += $"***** [OFP Scan Status] *****";
     scanStatus += $"\nOFP Enabled:{!disableOFP}";
+    scanStatus += $"\nScan Once:{scanOnce}";
     scanStatus += $"\nMode:{OFPScanMode[scanMode]}";
     scanStatus += $"\nQuick Scan:{quickScan}";
     scanStatus += $"\nScans Completed:{scans_Completed}";
@@ -621,9 +637,10 @@ private void DisplaySettings(IMyTextSurface panel, bool staticScreen = false)
     menuSettings += $"***** [OFP Settings] *****";
     menuSettings += (currentSelection == 1) ? $"\n> OFP Enabled: {!disableOFP}" : $"\n  OFP Enabled: {!disableOFP}";
     menuSettings += (currentSelection == 2) ? $"\n> Scan Mode: {OFPScanMode[scanMode]}" : $"\n  Scan Mode: {OFPScanMode[scanMode]}";
-    menuSettings += (currentSelection == 3) ? $"\n> Quick Scanning: {quickScan}" : $"\n  Quick Scanning: {quickScan}";
-    menuSettings += (currentSelection == 4) ? (setDistance) ? $"\n► Distance: {detectionDistance}" : $"\n> Distance: {detectionDistance}" : $"\n  Distance: {detectionDistance}";
-    menuSettings += (currentSelection == 5) ? $"\n> Return To Menu" : $"\n  Return To Menu";
+    menuSettings += (currentSelection == 3) ? $"\n> Scan Once: {scanOnce}" : $"\n  Scan Once: {scanOnce}";
+    menuSettings += (currentSelection == 4) ? $"\n> Quick Scanning: {quickScan}" : $"\n  Quick Scanning: {quickScan}";
+    menuSettings += (currentSelection == 5) ? (setDistance) ? $"\n► Distance: {detectionDistance}" : $"\n> Distance: {detectionDistance}" : $"\n  Distance: {detectionDistance}";
+    menuSettings += (currentSelection == 6) ? $"\n> Return To Menu" : $"\n  Return To Menu";
 
     WriteToLCD(menuSettings, panel);
 }
@@ -643,7 +660,7 @@ private void WriteToLCD(string text_out, IMyTextSurface screen)
 
 private void DisplayDepositsFound(IMyTextSurface panel, bool staticScreen = false)
 {
-    string deposits = "***** Depoits *****";
+    string deposits = "***** Ore Depoits *****";
     //Switching over to a dictionary as the "hard coded" list only works with vanilla SE.  Want to mod this to work with any ore detected.
     Dictionary<string, int> oreForDisplay = new Dictionary<string, int>();
 
@@ -741,7 +758,7 @@ public Program()
 
     //Load from saved settings
     string[] storedData = Storage.Split(';');
-    if (storedData.Count() == 4)
+    if (storedData.Count() == 5)
     {
         try
         {
@@ -761,14 +778,20 @@ public Program()
             else
                 sError += "\nError Parsing Saved scanMode value";
 
-            //Quick Scanning
+            //Scan Once
             if (bool.TryParse(storedData[2], out tmpBool))
+                scanOnce = tmpBool;
+            else
+                sError += "\nError Parsing Saved Scan Once value";
+
+            //Quick Scanning
+            if (bool.TryParse(storedData[3], out tmpBool))
                 quickScan = tmpBool;
             else
                 sError += "\nError Parsing Saved quickScan value";
 
             //Distance
-            if (int.TryParse(storedData[3], out tmpInt))
+            if (int.TryParse(storedData[4], out tmpInt))
                 detectionDistance = tmpInt;
             else
                 sError += "\nError Parsing Saved detectionDistance value";
@@ -835,6 +858,7 @@ public void Save()
     Storage = string.Join(";",
         disableOFP.ToString(),
         scanMode,
+        scanOnce.ToString(),
         quickScan.ToString(),
         detectionDistance);
 }
@@ -861,6 +885,16 @@ public void Main(string argument, UpdateType updateSource)
 
                 return;
             }
+
+            if (scanOnce)
+                if (scans_Completed >= 1)
+                {
+                    //Once we've scanned once we will turn off the detector and stop scanning.
+                    miniFlash = true;
+                    //Not sure I need to disable the Detector as that doesnt disable the script.  But if I return before the "ray" is cast then we may save on performance
+                    //detector.Enabled = false;
+                    return;
+                }
             Vector3D targetDirection;
 
             switch (scanMode)
@@ -930,16 +964,8 @@ public void Main(string argument, UpdateType updateSource)
                     miniFlash = true;
                     flashedOn = scans_Completed;
                 }
-                Echo($"Azimuth {azimuth}\nElevation {elevation}\nScans Completed {scans_Completed}");
+                //Echo($"Azimuth {azimuth}\nElevation {elevation}\nScans Completed {scans_Completed}");
                 detector.SetValue("RaycastTarget", target);
-
-                if (scanOnce)
-                    if (scans_Completed >= 1)
-                    {
-                        //Once we've scanned once we will turn off the detector and stop scanning.
-                        scanOnce = false;
-                        detector.Enabled = false;
-                    }
 
                 if (DEBUGGING)
                     throw (new DivideByZeroException());
