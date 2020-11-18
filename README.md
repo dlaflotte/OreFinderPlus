@@ -11,7 +11,7 @@
  * Import all GPS points
  * Increased distances (default 1KM detection range)
  
- V1.3 Features:
+ V1.5 Features:
  * Now the ability to edit all settings in the OFP Menu (scan distance, enable/disable, etc)
  * The script will automatically save and restore settings between sessions
  * 3 Different Scan modes
@@ -21,7 +21,8 @@
  * Ability to change scanning speed
  * New status screen and mini status screen
  * Tested with Most mods for extending range of the basic ore detector as well as different ore deposits (Like Better Stone) successfully.
- 
+ * Now supports Cockpit LCD's
+ * New Error handling to detect missing required mods
 
  The great thing about Ore Detector Raycast and Ore Finder Plus is that this doesnt "break" the immersion of the game.  This Mod and Script is not over powered.  You, as a player, still have to scan the planet or asteroid there is no "scan the world" button.
 
@@ -29,7 +30,7 @@
  ## Requirements for your vehicle:
  * Ore Detector somewhere on the grid.  Currently only the first one found is used.
  * Programming Block running this script
- * LCD Panel with the [OFP] designated tag.
+ * LCD Panel or Cockpit with the [OFP] designated tag.
 
  ## Operation
  Once the above is met you will need to add a few commands to your hot bar.
@@ -112,3 +113,5 @@ Screen = ministatus
  * Clear Data
  ![Clear Data](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/Clear%20Data.PNG?raw=true)
 
+ * Cockpit LCDs
+ ![Cockpit LCDs](https://github.com/dlaflotte/OreFinderPlus/blob/master/images/cockpit.PNG?raw=true)
