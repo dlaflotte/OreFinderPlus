@@ -23,6 +23,8 @@
                 * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
           Version: 1.6
                 * Fixed the scan once functionality and added the scan once item to settings/save/load.
+          Version: 1.7
+                * Fixed an issue with multiple cockpits on the same grid.
         */
 
 //Tag for Ore Finder Plus to look for on the ore detector or LCD.Either tag the name or custom data
@@ -70,7 +72,7 @@ Boolean quickScan = true;
 
 //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
 private static bool DEBUGGING = false;
-private static double VERSION_NUMBER = 1.6;
+private static double VERSION_NUMBER = 1.7;
 private static string PRODUCT_NAME = "Ore Finder Plus";
 
 //used to scan 360 degrees around the ore detector
@@ -233,7 +235,7 @@ private void RegisterLCDs()
         {
             MyIniParseResult result;
             _ini.TryParse(iCockpit.CustomData, out result);
-            if (_ini.Get("OreFinderPlus", "OFP_Display").ToString() == "")
+            if ((!iCockpit.CustomData.Contains("[OreFinderPlus]")))
             {
                 //No active ini data so we will set a default
                 iCockpit.CustomData = "[OreFinderPlus]";
@@ -246,10 +248,8 @@ private void RegisterLCDs()
                 iCockpit.CustomData += "\n; ministatus = shows scan status on small screens";
                 iCockpit.CustomData += "\n; settings = screen to set options";
                 iCockpit.CustomData += "\n; :::::EXAMPLE::::";
-                iCockpit.CustomData += "\n; OFP_Display=Enabled   <-- Do not change";
                 iCockpit.CustomData += "\n; OFP@0=default";
                 iCockpit.CustomData += "\n; OFP@2=status";
-                iCockpit.CustomData += "\nOFP_Display = Enabled";
                 iCockpit.CustomData += "\nOFP@0 = default";
                 iCockpit.GetSurface(0).ContentType = ContentType.TEXT_AND_IMAGE;
             }
