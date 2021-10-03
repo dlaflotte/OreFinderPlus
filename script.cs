@@ -1,37 +1,38 @@
 ﻿
 /*Script Author: Onosendai
-                    * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
-                    * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
-                    *          https://steamcommunity.com/workshop/filedetails/?id=1967157772
-             Version: 1.1
-                   * Initial version to display and track ore deposits.
-             Version: 1.2
-                   * Added support for Better Stone v7.0.3f
-             Version: 1.3
-                   * 360 Ore Scanning and logging.  If you turn on fast scanning and leave the stepping at 18 the scan will take about 90 seconds.  If you scan EVERY degree of the sphere and wait until you have the proper charge for the distance selected then you will wait longer but it will be more accurate.
-                   * Forward Plane Scanning (-5x5) times (-5x5) forward square.  Greater distance will make the square larger as these are degrees from the ore detector front projection
-                   * New Status screen to see the angle (Azimuth and Elevation) of a current scan
-                   * New mini status screen to show on small LCD's
-                   * Added the disable and enable argument.  This will disable or enable the ore detector
-                   * Added a scan program argument.  This will cause a onetime scan in whatever mode you have set and will then disable the ore detector
-                   * Added save and restore of settings
-                   * Added settings menu for making changes to common configuration options
-             Version: 1.4
-                   * Better Error handling for when the Ore Detector Raycast mod is not installed.  This will aid in giving direction to users when they subscript to the script.
-             Version: 1.5
-                   * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
-             Version: 1.6
-                   * Fixed the scan once functionality and added the scan once item to settings/save/load.
-             Version: 1.7
-                   * Fixed an issue with multiple cockpits on the same grid.
-             Version: 1.8
-                   * Big Thanks to Radar5k for adding the ability to use the Programming Block Screen as your OFP screen.  Now any PB with the tag [OFP] can be used to display content for OFP.
-                   * Important Info:
-                        * The new TAG that OFP is looking for is [OFP] not just OFP.  IF you have a screen that isnt working from an older build update the OFP_TAG variable below.  This was done to allow for users to name their Programming Blocks with the OFP tag without taking over the screen.
-                        * We are now looking for the custom data in LCDs/Programming Blocks/or Cockpits.  If any have the OFP_Tag in the name OR have the OFP_SETTINGS_TAG in the custom data section we will load OFP.  This allows you to name your screens whatever you like and still have OFP work.
-           */
+                           * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
+                           * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
+                           *          https://steamcommunity.com/workshop/filedetails/?id=1967157772
+                    Version: 1.1
+                          * Initial version to display and track ore deposits.
+                    Version: 1.2
+                          * Added support for Better Stone v7.0.3f
+                    Version: 1.3
+                          * 360 Ore Scanning and logging.  If you turn on fast scanning and leave the stepping at 18 the scan will take about 90 seconds.  If you scan EVERY degree of the sphere and wait until you have the proper charge for the distance selected then you will wait longer but it will be more accurate.
+                          * Forward Plane Scanning (-5x5) times (-5x5) forward square.  Greater distance will make the square larger as these are degrees from the ore detector front projection
+                          * New Status screen to see the angle (Azimuth and Elevation) of a current scan
+                          * New mini status screen to show on small LCD's
+                          * Added the disable and enable argument.  This will disable or enable the ore detector
+                          * Added a scan program argument.  This will cause a onetime scan in whatever mode you have set and will then disable the ore detector
+                          * Added save and restore of settings
+                          * Added settings menu for making changes to common configuration options
+                    Version: 1.4
+                          * Better Error handling for when the Ore Detector Raycast mod is not installed.  This will aid in giving direction to users when they subscript to the script.
+                    Version: 1.5
+                          * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
+                    Version: 1.6
+                          * Fixed the scan once functionality and added the scan once item to settings/save/load.
+                    Version: 1.7
+                          * Fixed an issue with multiple cockpits on the same grid.
+                    Version: 1.8
+                          * Big Thanks to Radar5k for adding the ability to use the Programming Block Screen as your OFP screen.  Now any PB with the tag [OFP] can be used to display content for OFP.
+                          * Important Info:
+                               * The new TAG that OFP is looking for is [OFP] not just OFP.  IF you have a screen that isnt working from an older build update the OFP_TAG variable below.  This was done to allow for users to name their Programming Blocks with the OFP tag without taking over the screen.
+                               * We are now looking for the custom data in LCDs/Programming Blocks/or Cockpits.  If any have the OFP_Tag in the name OR have the OFP_SETTINGS_TAG in the custom data section we will load OFP.  This allows you to name your screens whatever you like and still have OFP work.
+                    Version: 1.9
+         */
 
-//Tag for Ore Finder Plus to look for on the ore detector or LCD.Either tag the name or custom data
+//Tag for Ore Finder Plus to look for on the ore detector or LCD. Either tag the name or custom data
 //   Example Name: LCD Test [OFP]
 //                 LCD Port Side OFP
 private static string OFP_TAG = "[OFP]"; // Changed default tag from OFP so we can name the PB "PB OFP" without outputting to the screen. (Radar5k).
@@ -78,7 +79,7 @@ Boolean quickScan = true;
 
 //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
 private static bool DEBUGGING = false;
-private static double VERSION_NUMBER = 1.8;
+private static double VERSION_NUMBER = 1.9;
 private static string PRODUCT_NAME = "Ore Finder Plus";
 
 //used to scan 360 degrees around the ore detector
@@ -130,14 +131,14 @@ List<IMyProgrammableBlock> PBs = new List<IMyProgrammableBlock>(); // Hunting fo
 //Menu Handling Options
 int currentScreen = 0;
 /*Screens:
-                        0=Menu
-                        1=Deposits
-                        2=GPS Coordinates
-                        3=Compare All
-                        4=Status Screen (Scans Done, Scan Mode, Ore Count, etc)
-                        5=Clear Data
-                        6=Settings
-                        */
+                                0=Menu
+                                1=Deposits
+                                2=GPS Coordinates
+                                3=Compare All
+                                4=Status Screen (Scans Done, Scan Mode, Ore Count, etc)
+                                5=Clear Data
+                                6=Settings
+                                */
 int maxScreen = 6;
 int currentSelection = 1;
 int maxSelection = 6; //Used for the main menu
@@ -152,12 +153,12 @@ double flashedOn = 0;
 bool setDistance = false;  //used to set the scan distance in the settings menu
 bool disableOFP = false;
 string sError = "";
-
-/* ToDO:
-                         * Make ignoreList easy to edit (perhaps in the menu)
-                         * Perhaps add a bootup splash screen
-                         * Add the ability to broadcast the ore to a channel listener so displays on a remote base can see the ore.  This would also allow for drones to zoom around scanning and have ore results at the base.
-                         */
+string sOFPIniRegex = @"^OFP@.*";
+        /* ToDO:
+                                 * Make ignoreList easy to edit (perhaps in the menu)
+                                 * Perhaps add a bootup splash screen
+                                 * Add the ability to broadcast the ore to a channel listener so displays on a remote base can see the ore.  This would also allow for drones to zoom around scanning and have ore results at the base.
+                                 */
 
 
 private bool IsKnown(MyDetectedEntityInfo foundOre)
@@ -228,6 +229,23 @@ private void ClearLCD()
     }
 }
 
+private string CustomParseCustomData(string[] CustomData)
+{
+    //May have an issue in the custom data so lets see if we can use some regex and recover
+    string iniExtract = "";
+    System.Text.RegularExpressions.Regex rx = new System.Text.RegularExpressions.Regex(sOFPIniRegex);
+    foreach(string strLine in CustomData)
+    {
+        System.Text.RegularExpressions.MatchCollection matches = rx.Matches(strLine);
+        foreach (System.Text.RegularExpressions.Match match in matches)
+        {
+            iniExtract += $"{match.Value} \n";
+        }
+    }
+    if (DEBUGGING)
+        throw (new DivideByZeroException());
+    return iniExtract;
+}
 private void RegisterLCDs()
 {
     List<IMyTextPanel> allPanels = new List<IMyTextPanel>();
@@ -243,6 +261,7 @@ private void RegisterLCDs()
         if ((iCockpit.CustomName.Contains(OFP_TAG)) | (iCockpit.CustomData.Contains(OFP_TAG)) | (iCockpit.CustomData.Contains(OFP_SETTINGS_TAG)))
         {
             MyIniParseResult result;
+
             _ini.TryParse(iCockpit.CustomData, out result);
             if ((!iCockpit.CustomData.Contains(OFP_SETTINGS_TAG)))
             {
@@ -262,6 +281,7 @@ private void RegisterLCDs()
                 iCockpit.CustomData += "\nOFP@0 = default";
                 iCockpit.GetSurface(0).ContentType = ContentType.TEXT_AND_IMAGE;
             }
+
             //Need to capture the entire cockpit as it will have the custom data section for the INI
             cockpits.Add(iCockpit);
         }
@@ -489,7 +509,16 @@ private void RefreshScreens()
     {
         MyIniParseResult result;
         if (!_ini.TryParse(iCockPit.CustomData, out result))
-            throw new Exception(result.ToString());
+        {
+            //Error Parsing the CustomData.  This could be a conflict with another script like SAM
+            string[] config_split = iCockPit.CustomData.Split('\n');
+            string raw_settings = CustomParseCustomData(config_split);
+            string reconstructed_ini = $"{OFP_SETTINGS_TAG}\n{raw_settings}";
+            if (!_ini.TryParse(reconstructed_ini,out result))
+            {
+                throw (new DivideByZeroException());
+            }
+        }
         for (int cPanel = 0; cPanel < iCockPit.SurfaceCount - 1; cPanel++)
         {
             string screenType = _ini.Get("OreFinderPlus", $"OFP@{cPanel}").ToString();
