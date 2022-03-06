@@ -30,6 +30,7 @@
                                * The new TAG that OFP is looking for is [OFP] not just OFP.  IF you have a screen that isnt working from an older build update the OFP_TAG variable below.  This was done to allow for users to name their Programming Blocks with the OFP tag without taking over the screen.
                                * We are now looking for the custom data in LCDs/Programming Blocks/or Cockpits.  If any have the OFP_Tag in the name OR have the OFP_SETTINGS_TAG in the custom data section we will load OFP.  This allows you to name your screens whatever you like and still have OFP work.
                     Version: 1.9
+                                * Fixed issue found by Logoth where the detector would get out of sync with the settings on disable.
          */
 
 //Tag for Ore Finder Plus to look for on the ore detector or LCD. Either tag the name or custom data
@@ -479,7 +480,6 @@ private void HandleMenu(string cmd)
             scans_Completed = 0;
             break;
         case "disable":
-            detector.Enabled = false;
             disableOFP = false;
             flashedOn = 0;
             scans_Completed = 0;
