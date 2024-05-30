@@ -577,12 +577,12 @@
                     break;
                 case "enable":
                     detector.Enabled = true;
-                    disableOFP = true;
+                    disableOFP = false;
                     flashedOn = 0;
                     scans_Completed = 0;
                     break;
                 case "disable":
-                    disableOFP = false;
+                    disableOFP = true;
                     flashedOn = 0;
                     scans_Completed = 0;
                     break;
