@@ -138,6 +138,7 @@
 
         //All the known ore and locations we've found
         List<MyDetectedEntityInfo> DiscoveredOre = new List<MyDetectedEntityInfo>();
+        List<MyDetectedEntityInfo> FilteredOre = new List<MyDetectedEntityInfo>();
         readonly IMyOreDetector detector;
         public IMyTextSurface surface; // Had to change from readonly in order to write to the screen. (Radar5k).
 
@@ -226,9 +227,30 @@
                 {
                     oreFilter.Add(foundOre.Name, true);
                 }
+                if (oreFilter[foundOre.Name])
+                {
+                    FilteredOre.Add(foundOre);
+                }
             }
             return known;
         }
+
+        private void RefreshFilteredOreList()
+        {
+            FilteredOre = new List<MyDetectedEntityInfo>();
+
+            foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
+            {
+                if (oreFilter[oreInstance.Name])
+                {
+                    FilteredOre.Add(oreInstance);
+                }
+            }
+
+            // reset ore screen page to prevent that you land on an empty one
+            currentOreScreen = 0;
+        }
+
         private void LogInfo(IMyTextSurface panel, bool staticScreen = false)
         {
             WriteToLCD(logData, panel);
@@ -438,6 +460,7 @@
                                         if (x == currentDepositFilter)
                                         {
                                             oreFilter[ore.Key] = !ore.Value;
+                                            RefreshFilteredOreList();
                                         }
                                         x++;
                                     }
@@ -952,6 +975,7 @@
             scans_Completed = 0;
             currentDepositFilter = 0;
             oreFilter = new Dictionary<string, bool>();
+            RefreshFilteredOreList();
 
             WriteToLCD(cleared, panel);
         }
@@ -965,15 +989,13 @@
             int startOre = page * maxOrePerScreen;
 
             int displayedOres = 0;
-            for (int i = startOre; i < DiscoveredOre.Count(); i++)
+            for (int i = startOre; i < FilteredOre.Count(); i++)
             {
-                MyDetectedEntityInfo oreInstance = DiscoveredOre[i];
+                MyDetectedEntityInfo oreInstance = FilteredOre[i];
                 Vector3D location = (Vector3D)oreInstance.HitPosition;
-                if (oreFilter[oreInstance.Name])
-                {
-                    locationGPS += $"\nGPS:{OFP_TAG}-{oreInstance.Name}:{location.X}:{location.Y}:{location.Z}:";
-                    displayedOres++;
-                }
+                
+                locationGPS += $"\nGPS:{OFP_TAG}-{oreInstance.Name}:{location.X}:{location.Y}:{location.Z}:";
+                displayedOres++;
 
                 if (i >= (startOre + maxOrePerScreen-1))
                 {
@@ -981,9 +1003,9 @@
                 }
             }
 
-            //logData+= $"\npage={page} displayedOres={displayedOres} Discovered={DiscoveredOre.Count()}";
+            //logData+= $"\npage={page} displayedOres={displayedOres} Filtered={FilteredOre.Count()} Discovered={DiscoveredOre.Count()}";
             previousAllowed = (page == 0) ? false : true;
-            nextAllowed = (page >= DiscoveredOre.Count() / maxOrePerScreen) ? false : true;
+            nextAllowed = (page >= FilteredOre.Count() / maxOrePerScreen) ? false : true;
 
             if (!staticScreen)
             {
