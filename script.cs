@@ -5,44 +5,50 @@
 // top of your final script. You can safely delete this file if you do not want any such comments.
 // 
         /*Script Author: Onosendai
-                                   * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
-                                   * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
-                                   *          https://steamcommunity.com/workshop/filedetails/?id=1967157772
-                            Version: 1.1
-                                  * Initial version to display and track ore deposits.
-                            Version: 1.2
-                                  * Added support for Better Stone v7.0.3f
-                            Version: 1.3
-                                  * 360 Ore Scanning and logging.  If you turn on fast scanning and leave the stepping at 18 the scan will take about 90 seconds.  If you scan EVERY degree of the sphere and wait until you have the proper charge for the distance selected then you will wait longer but it will be more accurate.
-                                  * Forward Plane Scanning (-5x5) times (-5x5) forward square.  Greater distance will make the square larger as these are degrees from the ore detector front projection
-                                  * New Status screen to see the angle (Azimuth and Elevation) of a current scan
-                                  * New mini status screen to show on small LCD's
-                                  * Added the disable and enable argument.  This will disable or enable the ore detector
-                                  * Added a scan program argument.  This will cause a onetime scan in whatever mode you have set and will then disable the ore detector
-                                  * Added save and restore of settings
-                                  * Added settings menu for making changes to common configuration options
-                            Version: 1.4
-                                  * Better Error handling for when the Ore Detector Raycast mod is not installed.  This will aid in giving direction to users when they subscript to the script.
-                            Version: 1.5
-                                  * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
-                            Version: 1.6
-                                  * Fixed the scan once functionality and added the scan once item to settings/save/load.
-                            Version: 1.7
-                                  * Fixed an issue with multiple cockpits on the same grid.
-                            Version: 1.8
-                                  * Big Thanks to Radar5k for adding the ability to use the Programming Block Screen as your OFP screen.  Now any PB with the tag [OFP] can be used to display content for OFP.
-                                  * Important Info:
-                                       * The new TAG that OFP is looking for is [OFP] not just OFP.  IF you have a screen that isnt working from an older build update the OFP_TAG variable below.  This was done to allow for users to name their Programming Blocks with the OFP tag without taking over the screen.
-                                       * We are now looking for the custom data in LCDs/Programming Blocks/or Cockpits.  If any have the OFP_Tag in the name OR have the OFP_SETTINGS_TAG in the custom data section we will load OFP.  This allows you to name your screens whatever you like and still have OFP work.
-                            Version: 1.9
-                                        * Fixed issue found by Logoth where the detector would get out of sync with the settings on disable.
-                            Version: 2.0
-                                  * Issue with multiple ore detectors.  If the random one selected by OFP is disabled then scans will not work.  Now you can tag your detector with the OFP_TAG and OFP will use that ore detector by default.
-                            Version: 3.0
-                                  * Fixed issue found by @Atono on Degrees vs Radian usage
-                                  * Now you can filter which ore show up in the ORE GPS Screen by using the menu system.
-                                  * You now have pagination on the Ore GPS screen.  If you have more than 10 ore deposits you can page through them by default but the limit can be changed.  It was noticed that when you get 65,000 characters on a LCD screen it would lag the game server.  This is a limitation of the game and not the script.
-                 */
+                                  * Description: This script leverages the Ore Detector Raytrace mode allowing you to automatically record ore it "hits".
+                                  * Credits: Big thanks to @Reacher for the MOD allowing Ray Tracing of Ore.
+                                  *          https://steamcommunity.com/workshop/filedetails/?id=1967157772
+                           Version: 1.1
+                                 * Initial version to display and track ore deposits.
+                           Version: 1.2
+                                 * Added support for Better Stone v7.0.3f
+                           Version: 1.3
+                                 * 360 Ore Scanning and logging.  If you turn on fast scanning and leave the stepping at 18 the scan will take about 90 seconds.  If you scan EVERY degree of the sphere and wait until you have the proper charge for the distance selected then you will wait longer but it will be more accurate.
+                                 * Forward Plane Scanning (-5x5) times (-5x5) forward square.  Greater distance will make the square larger as these are degrees from the ore detector front projection
+                                 * New Status screen to see the angle (Azimuth and Elevation) of a current scan
+                                 * New mini status screen to show on small LCD's
+                                 * Added the disable and enable argument.  This will disable or enable the ore detector
+                                 * Added a scan program argument.  This will cause a onetime scan in whatever mode you have set and will then disable the ore detector
+                                 * Added save and restore of settings
+                                 * Added settings menu for making changes to common configuration options
+                           Version: 1.4
+                                 * Better Error handling for when the Ore Detector Raycast mod is not installed.  This will aid in giving direction to users when they subscript to the script.
+                           Version: 1.5
+                                 * Added function to allow for screens on cockpits.  No requirement for external LCD's.  Also when displaying the ministatus on a cockpit you can change the font size and it will remember that rather than forcing it to the 4.5/5.5 size.
+                           Version: 1.6
+                                 * Fixed the scan once functionality and added the scan once item to settings/save/load.
+                           Version: 1.7
+                                 * Fixed an issue with multiple cockpits on the same grid.
+                           Version: 1.8
+                                 * Big Thanks to Radar5k for adding the ability to use the Programming Block Screen as your OFP screen.  Now any PB with the tag [OFP] can be used to display content for OFP.
+                                 * Important Info:
+                                      * The new TAG that OFP is looking for is [OFP] not just OFP.  IF you have a screen that isnt working from an older build update the OFP_TAG variable below.  This was done to allow for users to name their Programming Blocks with the OFP tag without taking over the screen.
+                                      * We are now looking for the custom data in LCDs/Programming Blocks/or Cockpits.  If any have the OFP_Tag in the name OR have the OFP_SETTINGS_TAG in the custom data section we will load OFP.  This allows you to name your screens whatever you like and still have OFP work.
+                           Version: 1.9
+                                       * Fixed issue found by Logoth where the detector would get out of sync with the settings on disable.
+                           Version: 2.0
+                                 * Issue with multiple ore detectors.  If the random one selected by OFP is disabled then scans will not work.  Now you can tag your detector with the OFP_TAG and OFP will use that ore detector by default.
+                           Version: 3.0
+                                 * Fixed issue found by @Atono on Degrees vs Radian usage
+                                 * Now you can filter which ore show up in the ORE GPS Screen by using the menu system.
+                                 * You now have pagination on the Ore GPS screen.  If you have more than 10 ore deposits you can page through them by default but the limit can be changed.  It was noticed that when you get 65,000 characters on a LCD screen it would lag the game server.  This is a limitation of the game and not the script.
+                           Version: 3.6
+                                 * Added "Ignore Add/Remove" menu item to settings screen for managing ore ignore list
+                                 * Users can now toggle individual discovered ore types to be ignored/scanned using menu navigation
+                                 * Changed ignore display format from [IGNORED]/[SCANNING] to [X]/[ ] checkbox format
+                                 * When ore is set to ignore, it is automatically removed from the known ore list and discovery data
+                                 * Ignored ore types are added to the ore detector's blacklist for future scanning sessions
+                */
 
         //Tag for Ore Finder Plus to look for on the ore detector or LCD. Either tag the name or custom data
         //   Example Name: LCD Test [OFP]
@@ -94,7 +100,7 @@
 
         //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
         private static bool DEBUGGING = false;
-        private static double VERSION_NUMBER = 3.0;
+        private static double VERSION_NUMBER = 3.6;
         private static string PRODUCT_NAME = "Ore Finder Plus";
 
         //used to scan 360 degrees around the ore detector
@@ -156,6 +162,7 @@
                                         4=Status Screen (Scans Done, Scan Mode, Ore Count, etc)
                                         5=Clear Data
                                         6=Settings
+                                        8=Ignore Add/Remove Screen
                                         */
 
         int currentDepositFilter = 0;
@@ -168,9 +175,9 @@
         int currentSubMenu = 0;
         int currentSelection = 1;
         int maxSelection = 6; //Used for the main menu
-        int maxSettingsSelection = 6;  //Used for the settings menu
+        int maxSettingsSelection = 7;  //Used for the settings menu - increased to 7 for new ignore menu item
         MyIni _ini = new MyIni();
-        private string test;
+        string test;
         //Miniflash is for the mini status display.  When mini flash is set to false the status screen will flash "Scan Complete" for x ticks and then go back to showing status.
         bool miniFlash = false;
         int miniFlashTicks = 0;
@@ -182,7 +189,11 @@
         string sOFPIniRegex = @"^OFP@.*";
         string logData = "";
         
-        /* ToDO:
+        // New variables for ignore management
+        int currentIgnoreSelection = 0;
+        int maxIgnoreSelection = 0;
+        List<string> discoveredOreTypes = new List<string>();
+                /* ToDO:
                                  * Make ignoreList easy to edit (perhaps in the menu)
                                  * Perhaps add a bootup splash screen
                                  * Add the ability to broadcast the ore to a channel listener so displays on a remote base can see the ore.  This would also allow for drones to zoom around scanning and have ore results at the base.
@@ -190,7 +201,7 @@
                                  * 
                                  */
 
-        private bool IsKnown(MyDetectedEntityInfo foundOre)
+        bool IsKnown(MyDetectedEntityInfo foundOre)
         {
             bool known = false;
             foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
@@ -231,11 +242,18 @@
                 {
                     FilteredOre.Add(foundOre);
                 }
+                
+                // Update discovered ore types list for ignore management
+                if (!discoveredOreTypes.Contains(foundOre.Name))
+                {
+                    discoveredOreTypes.Add(foundOre.Name);
+                    maxIgnoreSelection = discoveredOreTypes.Count();
+                }
             }
             return known;
         }
 
-        private void RefreshFilteredOreList()
+        void RefreshFilteredOreList()
         {
             FilteredOre = new List<MyDetectedEntityInfo>();
 
@@ -251,12 +269,108 @@
             currentOreScreen = 0;
         }
 
-        private void LogInfo(IMyTextSurface panel, bool staticScreen = false)
+        void RemoveIgnoredOreFromKnownList(string oreType)
+        {
+            // Remove all ore instances of the ignored type from DiscoveredOre
+            List<MyDetectedEntityInfo> tempList = new List<MyDetectedEntityInfo>();
+            foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
+            {
+                if (oreInstance.Name != oreType)
+                {
+                    tempList.Add(oreInstance);
+                }
+            }
+            DiscoveredOre = tempList;
+            
+            // Remove from ore filter as well
+            if (oreFilter.ContainsKey(oreType))
+            {
+                oreFilter.Remove(oreType);
+            }
+            
+            // Refresh the filtered ore list
+            RefreshFilteredOreList();
+        }
+
+        void UpdateIgnoreList()
+        {
+            // Reconstruct ignore list from current discovered ore types
+            List<string> ignoredOres = new List<string>();
+            foreach (string oreType in discoveredOreTypes)
+            {
+                string[] currentIgnored = ignoreList.Split(',');
+                bool isIgnored = false;
+                foreach (string ignored in currentIgnored)
+                {
+                    if (ignored.Trim() == oreType)
+                    {
+                        isIgnored = true;
+                        break;
+                    }
+                }
+                if (isIgnored)
+                {
+                    ignoredOres.Add(oreType);
+                }
+            }
+            ignoreList = string.Join(",", ignoredOres);
+            
+            // Update the ore detector's blacklist
+            detector.SetValue("OreBlacklist", ignoreList);
+        }
+
+        bool IsOreIgnored(string oreType)
+        {
+            string[] ignoredOres = ignoreList.Split(',');
+            foreach (string ignored in ignoredOres)
+            {
+                if (ignored.Trim() == oreType)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        void ToggleOreIgnored(string oreType)
+        {
+            List<string> ignoredOres = new List<string>();
+            if (!string.IsNullOrEmpty(ignoreList))
+            {
+                string[] currentIgnored = ignoreList.Split(',');
+                foreach (string ignored in currentIgnored)
+                {
+                    if (!string.IsNullOrEmpty(ignored.Trim()))
+                    {
+                        ignoredOres.Add(ignored.Trim());
+                    }
+                }
+            }
+
+            if (IsOreIgnored(oreType))
+            {
+                // Remove from ignore list
+                ignoredOres.Remove(oreType);
+            }
+            else
+            {
+                // Add to ignore list and remove from known ore list
+                ignoredOres.Add(oreType);
+                RemoveIgnoredOreFromKnownList(oreType);
+            }
+
+            ignoreList = string.Join(",", ignoredOres);
+            
+            // Update the ore detector's blacklist
+            detector.SetValue("OreBlacklist", ignoreList);
+        }
+
+        void LogInfo(IMyTextSurface panel, bool staticScreen = false)
         {
             WriteToLCD(logData, panel);
         }
 
-        private void ClearLCD()
+        void ClearLCD()
         {
             foreach (IMyTextPanel panel in lcdPanels)
             {
@@ -264,7 +378,7 @@
             }
         }
 
-        private string CustomParseCustomData(string[] CustomData)
+        string CustomParseCustomData(string[] CustomData)
         {
             //May have an issue in the custom data so lets see if we can use some regex and recover
             string iniExtract = "";
@@ -281,7 +395,7 @@
                 throw (new DivideByZeroException());
             return iniExtract;
         }
-        private void RegisterLCDs()
+        void RegisterLCDs()
         {
             List<IMyTextPanel> allPanels = new List<IMyTextPanel>();
             List<IMyCockpit> allCockpits = new List<IMyCockpit>();
@@ -383,7 +497,7 @@
             }
         }
 
-        private void HandleSettings()
+        void HandleSettings()
         {
             switch (currentSelection)
             {
@@ -416,6 +530,13 @@
                     setDistance = !setDistance;
                     break;
                 case (6):
+                    //Navigate to Ignore Add/Remove screen
+                    currentScreen = 8;
+                    currentSelection = 1;
+                    currentIgnoreSelection = 0;
+                    break;
+                case (7):
+                    //Return to main menu
                     currentScreen = 0;
                     currentSelection = 1;
                     break;
@@ -426,7 +547,25 @@
             }
             RefreshScreens();
         }
-        private void HandleMenu(string cmd)
+        
+        void HandleIgnoreMenu()
+        {
+            if (currentIgnoreSelection < discoveredOreTypes.Count)
+            {
+                string selectedOre = discoveredOreTypes[currentIgnoreSelection];
+                ToggleOreIgnored(selectedOre);
+                RefreshScreens();
+            }
+            else if (currentIgnoreSelection == discoveredOreTypes.Count)
+            {
+                // Return to settings menu
+                currentScreen = 5;
+                currentSelection = 1;
+                RefreshScreens();
+            }
+        }
+        
+        void HandleMenu(string cmd)
         {
             switch (cmd.ToLower())
             {
@@ -472,7 +611,7 @@
                             }
                             break;
                         case (2):
-                            switch(currentSubMenu)
+                            switch (currentSubMenu)
                             {
                                 case (2):
                                     currentOreScreen--;
@@ -491,6 +630,10 @@
                         case (5):
                             //need to change some settings here and refresh.  Only need to change the screen if we are on the "return to menu" option
                             HandleSettings();
+                            break;
+                        case (8):
+                            //Handle ignore add/remove screen
+                            HandleIgnoreMenu();
                             break;
                         default:
                             currentScreen = 0;
@@ -519,11 +662,11 @@
                             if (currentSubMenu < 2)
                             {
                                 currentSubMenu++;
-                                if((currentSubMenu == 2) && (!previousAllowed))
+                                if ((currentSubMenu == 2) && (!previousAllowed))
                                 {
                                     currentSubMenu--;
                                 }
-                                if((currentSubMenu == 1) && (!nextAllowed))
+                                if ((currentSubMenu == 1) && (!nextAllowed))
                                 {
                                     if (previousAllowed)
                                         currentSubMenu++;
@@ -543,6 +686,13 @@
                                 {
                                     currentSelection--;
                                 }
+                            }
+                            break;
+                        case (8):
+                            //Handle ignore screen navigation
+                            if (currentIgnoreSelection > 0)
+                            {
+                                currentIgnoreSelection--;
                             }
                             break;
                     }
@@ -588,6 +738,13 @@
                                 }
                             }
                             break;
+                        case (8):
+                            //Handle ignore screen navigation
+                            if (currentIgnoreSelection < maxIgnoreSelection)
+                            {
+                                currentIgnoreSelection++;
+                            }
+                            break;
                     }
                     break;
                 case "menu":
@@ -629,7 +786,7 @@
             RefreshScreens();
         }
 
-        private void RefreshScreens()
+        void RefreshScreens()
         {
             foreach (IMyCockpit iCockPit in cockpits)
             {
@@ -770,7 +927,7 @@
             }
 
         }
-        private void DisplayMenu(IMyTextSurface panel, bool staticScreen = false)
+        void DisplayMenu(IMyTextSurface panel, bool staticScreen = false)
         {
             string menuSystem = "";
             menuSystem += $"***** {PRODUCT_NAME}: {VERSION_NUMBER} *****";
@@ -783,7 +940,7 @@
             WriteToLCD(menuSystem, panel);
         }
 
-        private void DisplayMiniScanStatus(IMyTextSurface panel, bool staticScreen = false, bool isCockpit = false)
+        void DisplayMiniScanStatus(IMyTextSurface panel, bool staticScreen = false, bool isCockpit = false)
         {
             string scanMiniStatus = "";
             if (disableOFP)
@@ -852,7 +1009,7 @@
             WriteToLCD(scanMiniStatus, panel);
         }
 
-        private void DisplayScanStatus(IMyTextSurface panel, bool staticScreen = false)
+        void DisplayScanStatus(IMyTextSurface panel, bool staticScreen = false)
         {
             string scanStatus = "";
 
@@ -875,7 +1032,7 @@
             WriteToLCD(scanStatus, panel);
         }
 
-        private void DisplaySettings(IMyTextSurface panel, bool staticScreen = false)
+        void DisplaySettings(IMyTextSurface panel, bool staticScreen = false)
         {
             string menuSettings = "";
 
@@ -885,11 +1042,50 @@
             menuSettings += (currentSelection == 3) ? $"\n> Scan Once: {scanOnce}" : $"\n  Scan Once: {scanOnce}";
             menuSettings += (currentSelection == 4) ? $"\n> Quick Scanning: {quickScan}" : $"\n  Quick Scanning: {quickScan}";
             menuSettings += (currentSelection == 5) ? (setDistance) ? $"\n► Distance: {detectionDistance}" : $"\n> Distance: {detectionDistance}" : $"\n  Distance: {detectionDistance}";
-            menuSettings += (currentSelection == 6) ? $"\n> Return To Menu" : $"\n  Return To Menu";
+            menuSettings += (currentSelection == 6) ? $"\n> Ignore Add/Remove" : $"\n  Ignore Add/Remove";
+            menuSettings += (currentSelection == 7) ? $"\n> Return To Menu" : $"\n  Return To Menu";
 
             WriteToLCD(menuSettings, panel);
         }
-        private void WriteToLCD(string text_out, IMyTextSurface screen)
+        
+        void DisplayIgnoreAddRemove(IMyTextSurface panel, bool staticScreen = false)
+        {
+            string ignoreMenu = "";
+
+            ignoreMenu += $"***** [Ignore Add/Remove] *****";
+            ignoreMenu += $"\nCurrent Ignore List: {ignoreList}";
+            ignoreMenu += "\n";
+
+            if (discoveredOreTypes.Count == 0)
+            {
+                ignoreMenu += "\nNo ore types discovered yet.";
+                ignoreMenu += "\nScan some ore first!";
+            }
+            else
+            {
+                for (int i = 0; i < discoveredOreTypes.Count; i++)
+                {
+                    string oreType = discoveredOreTypes[i];
+                    bool isIgnored = IsOreIgnored(oreType);
+                    string checkbox = isIgnored ? "[X]" : "[ ]";
+                    
+                    if (i == currentIgnoreSelection)
+                    {
+                        ignoreMenu += $"\n> {checkbox} {oreType}";
+                    }
+                    else
+                    {
+                        ignoreMenu += $"\n  {checkbox} {oreType}";
+                    }
+                }
+            }
+
+            ignoreMenu += (currentIgnoreSelection == discoveredOreTypes.Count) ? "\n> Return To Settings" : "\n  Return To Settings";
+
+            WriteToLCD(ignoreMenu, panel);
+        }
+        
+        void WriteToLCD(string text_out, IMyTextSurface screen)
         {
 
             if (screen != null)
@@ -903,18 +1099,18 @@
             }
         }
 
-        private void DisplayDepositsFound(IMyTextSurface panel, bool staticScreen = false)
+        void DisplayDepositsFound(IMyTextSurface panel, bool staticScreen = false)
         {
             string deposits = "***** Ore Depoits *****";
             //Switching over to a dictionary as the "hard coded" list only works with vanilla SE.  Want to mod this to work with any ore detected.
             Dictionary<string, int> oreForDisplay = new Dictionary<string, int>();
-            
+
 
 
 
             foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
             {
-                if(!oreFilter.ContainsKey(oreInstance.Name))
+                if (!oreFilter.ContainsKey(oreInstance.Name))
                 {
                     oreFilter.Add(oreInstance.Name, true);
                 }
@@ -965,7 +1161,7 @@
             WriteToLCD(deposits, panel);
         }
 
-        private void ClearData(IMyTextSurface panel, bool staticScreen = false)
+        void ClearData(IMyTextSurface panel, bool staticScreen = false)
         {
             //Clear all data from the recorded Ores
             string cleared = "***** DATA CLEARED *****";
@@ -975,15 +1171,21 @@
             scans_Completed = 0;
             currentDepositFilter = 0;
             oreFilter = new Dictionary<string, bool>();
+            
+            // Clear discovered ore types for ignore management
+            discoveredOreTypes = new List<string>();
+            maxIgnoreSelection = 0;
+            currentIgnoreSelection = 0;
+            
             RefreshFilteredOreList();
 
             WriteToLCD(cleared, panel);
         }
-        private void DisplayKnownOreGPS(IMyTextSurface panel, bool staticScreen = false, int page = 0)
-        {   
+        void DisplayKnownOreGPS(IMyTextSurface panel, bool staticScreen = false, int page = 0)
+        {
             //Allow user to filter the ore they see 
             string locationGPS = "*** ORE GPS ***";
-            
+
 
             //This will be the GPS coordinates for the ore and only display some at a time
             int startOre = page * maxOrePerScreen;
@@ -993,11 +1195,11 @@
             {
                 MyDetectedEntityInfo oreInstance = FilteredOre[i];
                 Vector3D location = (Vector3D)oreInstance.HitPosition;
-                
+
                 locationGPS += $"\nGPS:{OFP_TAG}-{oreInstance.Name}:{location.X}:{location.Y}:{location.Z}:";
                 displayedOres++;
 
-                if (i >= (startOre + maxOrePerScreen-1))
+                if (i >= (startOre + maxOrePerScreen - 1))
                 {
                     break;
                 }
@@ -1022,7 +1224,7 @@
         }
 
 
-        private void ShowScreen(int selection, IMyTextSurface currentPanel, bool staticScreen = false, bool isCockpit = false)
+        void ShowScreen(int selection, IMyTextSurface currentPanel, bool staticScreen = false, bool isCockpit = false)
         {
             switch (selection)
             {
@@ -1033,7 +1235,7 @@
                     DisplayDepositsFound(currentPanel, staticScreen);
                     break;
                 case 2:
-                    DisplayKnownOreGPS(currentPanel, staticScreen,currentOreScreen);
+                    DisplayKnownOreGPS(currentPanel, staticScreen, currentOreScreen);
                     break;
                 case 3:
                     LogInfo(currentPanel, staticScreen);
@@ -1050,6 +1252,9 @@
                     break;
                 case 7:
                     DisplayMiniScanStatus(currentPanel, staticScreen, isCockpit);
+                    break;
+                case 8:
+                    DisplayIgnoreAddRemove(currentPanel, staticScreen);
                     break;
                 default:
                     DisplayMenu(currentPanel, staticScreen);
@@ -1135,7 +1340,7 @@
             ClearLCD();
             RefreshScreens();
         }
-        private void SetupDetector()
+        void SetupDetector()
         {
             //This function was taken from the sample from @Reacher
             // https://steamcommunity.com/sharedfiles/filedetails/?id=1967149949
