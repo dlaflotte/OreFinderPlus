@@ -55,6 +55,10 @@
                                  * Fixed ignore list toggle display issue where [X] checkbox state was not properly updating
                                  * Fixed issue where ignored ores could be re-added to ignore list without proper state tracking
                                  * Improved ignore list state consistency for "better stone" mode compatibility
+                           Version: 3.9
+                                 * Fixed display filter indexing bug causing wrong ore types to be toggled
+                                 * Stone is now permanently excluded from ignore and display filter menus
+                                 * Fixed selection pointer drift when new ores are discovered during menu navigation
                 */
 
         //Tag for Ore Finder Plus to look for on the ore detector or LCD. Either tag the name or custom data
@@ -106,7 +110,7 @@
 
         //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
         private static bool DEBUGGING = false;
-        private static double VERSION_NUMBER = 3.8;
+        private static double VERSION_NUMBER = 3.9;
         private static string PRODUCT_NAME = "Ore Finder Plus";
 
         //used to scan 360 degrees around the ore detector
