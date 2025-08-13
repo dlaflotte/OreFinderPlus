@@ -48,6 +48,13 @@
                                  * Changed ignore display format from [IGNORED]/[SCANNING] to [X]/[ ] checkbox format
                                  * When ore is set to ignore, it is automatically removed from the known ore list and discovery data
                                  * Ignored ore types are added to the ore detector's blacklist for future scanning sessions
+                           Version: 3.7
+                                 * Enhanced debug display with comprehensive ignore list and menu state information
+                                 * Added detailed logging for troubleshooting "better stone" mode issues with ignore functionality
+                           Version: 3.8
+                                 * Fixed ignore list toggle display issue where [X] checkbox state was not properly updating
+                                 * Fixed issue where ignored ores could be re-added to ignore list without proper state tracking
+                                 * Improved ignore list state consistency for "better stone" mode compatibility
                 */
 
         //Tag for Ore Finder Plus to look for on the ore detector or LCD. Either tag the name or custom data
@@ -60,7 +67,6 @@
         //ignoreList will allow you to exclude types of ORE.
         //example: "Stone,Ice"
         string ignoreList = "Stone";
-
 
         //Deposit Range is the potential size of a deposit of ore.  The Below size is in meters.
         //If you start getting the same ore deposits tagged with multiple GPS coordinates
@@ -100,7 +106,7 @@
 
         //Only turn this on if you're using DNSpy to view variable data.  You will need to configure it to catch DivideByZero Exceptions.
         private static bool DEBUGGING = false;
-        private static double VERSION_NUMBER = 3.6;
+        private static double VERSION_NUMBER = 3.8;
         private static string PRODUCT_NAME = "Ore Finder Plus";
 
         //used to scan 360 degrees around the ore detector
@@ -193,6 +199,13 @@
         int currentIgnoreSelection = 0;
         int maxIgnoreSelection = 0;
         List<string> discoveredOreTypes = new List<string>();
+        
+        // Debug tracking variables
+        string lastCommand = "";
+        string lastToggleAction = "";
+        
+        // Use a more reliable ignore storage mechanism
+        List<string> ignoredOreTypes = new List<string>();
                 /* ToDO:
                                  * Make ignoreList easy to edit (perhaps in the menu)
                                  * Perhaps add a bootup splash screen
@@ -243,11 +256,21 @@
                     FilteredOre.Add(foundOre);
                 }
                 
-                // Update discovered ore types list for ignore management
-                if (!discoveredOreTypes.Contains(foundOre.Name))
+                // Update discovered ore types list for ignore management, but exclude Stone
+                if (!discoveredOreTypes.Contains(foundOre.Name) && foundOre.Name != "Stone")
                 {
                     discoveredOreTypes.Add(foundOre.Name);
+                    
+                    // Update maxIgnoreSelection but preserve selection if it's on "Return to Settings"
+                    int oldMaxIgnoreSelection = maxIgnoreSelection;
                     maxIgnoreSelection = discoveredOreTypes.Count();
+                    
+                    // If the current selection was on "Return to Settings" (which is at the old max), 
+                    // update it to the new max to keep it on "Return to Settings"
+                    if (currentIgnoreSelection == oldMaxIgnoreSelection && oldMaxIgnoreSelection > 0)
+                    {
+                        currentIgnoreSelection = maxIgnoreSelection;
+                    }
                 }
             }
             return known;
@@ -271,6 +294,12 @@
 
         void RemoveIgnoredOreFromKnownList(string oreType)
         {
+            // Don't allow Stone to be removed from ignore list
+            if (oreType == "Stone")
+            {
+                return;
+            }
+            
             // Remove all ore instances of the ignored type from DiscoveredOre
             List<MyDetectedEntityInfo> tempList = new List<MyDetectedEntityInfo>();
             foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
@@ -294,80 +323,203 @@
 
         void UpdateIgnoreList()
         {
-            // Reconstruct ignore list from current discovered ore types
-            List<string> ignoredOres = new List<string>();
-            foreach (string oreType in discoveredOreTypes)
+            // Always ensure Stone is in the ignore list
+            if (!ignoredOreTypes.Contains("Stone"))
             {
-                string[] currentIgnored = ignoreList.Split(',');
-                bool isIgnored = false;
-                foreach (string ignored in currentIgnored)
-                {
-                    if (ignored.Trim() == oreType)
-                    {
-                        isIgnored = true;
-                        break;
-                    }
-                }
-                if (isIgnored)
-                {
-                    ignoredOres.Add(oreType);
-                }
+                ignoredOreTypes.Insert(0, "Stone");
             }
-            ignoreList = string.Join(",", ignoredOres);
+            
+            // Reconstruct ignore list from the reliable list storage
+            ignoreList = string.Join(",", ignoredOreTypes);
             
             // Update the ore detector's blacklist
-            detector.SetValue("OreBlacklist", ignoreList);
+            try
+            {
+                detector.SetValue("OreBlacklist", ignoreList);
+            }
+            catch (Exception e)
+            {
+                logData += $"\nError setting OreBlacklist in UpdateIgnoreList: {e.Message}";
+            }
         }
 
         bool IsOreIgnored(string oreType)
         {
-            string[] ignoredOres = ignoreList.Split(',');
-            foreach (string ignored in ignoredOres)
-            {
-                if (ignored.Trim() == oreType)
-                {
-                    return true;
-                }
-            }
-            return false;
+            // Use the reliable list storage instead of parsing the comma-separated string
+            return ignoredOreTypes.Contains(oreType);
         }
 
         void ToggleOreIgnored(string oreType)
         {
-            List<string> ignoredOres = new List<string>();
-            if (!string.IsNullOrEmpty(ignoreList))
+            // Never allow Stone to be toggled
+            if (oreType == "Stone")
             {
-                string[] currentIgnored = ignoreList.Split(',');
-                foreach (string ignored in currentIgnored)
-                {
-                    if (!string.IsNullOrEmpty(ignored.Trim()))
-                    {
-                        ignoredOres.Add(ignored.Trim());
-                    }
-                }
+                lastToggleAction = $"Cannot toggle Stone - it must remain ignored";
+                return;
             }
-
-            if (IsOreIgnored(oreType))
+            
+            bool wasIgnored = IsOreIgnored(oreType);
+            
+            if (wasIgnored)
             {
                 // Remove from ignore list
-                ignoredOres.Remove(oreType);
+                ignoredOreTypes.Remove(oreType);
+                lastToggleAction = $"REMOVED {oreType} from ignore list";
             }
             else
             {
                 // Add to ignore list and remove from known ore list
-                ignoredOres.Add(oreType);
+                if (!ignoredOreTypes.Contains(oreType))
+                {
+                    ignoredOreTypes.Add(oreType);
+                }
                 RemoveIgnoredOreFromKnownList(oreType);
+                lastToggleAction = $"ADDED {oreType} to ignore list and removed from known ore";
             }
 
-            ignoreList = string.Join(",", ignoredOres);
+            // Update the string version and detector blacklist
+            UpdateIgnoreList();
             
-            // Update the ore detector's blacklist
-            detector.SetValue("OreBlacklist", ignoreList);
+            // Update debug log
+            logData += $"\nToggle Action: {lastToggleAction}";
+            logData += $"\nNew Ignore List: [{ignoreList}]";
+            logData += $"\nWas Ignored: {wasIgnored}, Now Ignored: {IsOreIgnored(oreType)}";
+            logData += $"\nIgnored List Count: {ignoredOreTypes.Count}";
+        }
+
+        void InitializeIgnoreList()
+        {
+            // Parse the initial ignore list into the reliable storage
+            ignoredOreTypes.Clear();
+            if (!string.IsNullOrEmpty(ignoreList))
+            {
+                string[] ores = ignoreList.Split(',');
+                foreach (string ore in ores)
+                {
+                    string cleanOre = ore.Trim();
+                    if (!string.IsNullOrEmpty(cleanOre) && !ignoredOreTypes.Contains(cleanOre))
+                    {
+                        ignoredOreTypes.Add(cleanOre);
+                    }
+                }
+            }
+            
+            // Always ensure Stone is in the ignore list
+            if (!ignoredOreTypes.Contains("Stone"))
+            {
+                ignoredOreTypes.Insert(0, "Stone");
+            }
+        }
+
+        // Helper method to get displayable ores in consistent order
+        List<KeyValuePair<string, int>> GetDisplayableOres()
+        {
+            Dictionary<string, int> oreForDisplay = new Dictionary<string, int>();
+
+            foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
+            {
+                if (!oreFilter.ContainsKey(oreInstance.Name))
+                {
+                    oreFilter.Add(oreInstance.Name, true);
+                }
+
+                string oreKey = oreInstance.Name;
+                if (oreForDisplay.ContainsKey(oreKey))
+                {
+                    int amount = oreForDisplay[oreKey];
+                    amount += 1;
+                    oreForDisplay[oreKey] = amount;
+                }
+                else
+                {
+                    oreForDisplay.Add(oreKey, 1);
+                }
+            }
+
+            // Create a list excluding Stone for proper indexing
+            List<KeyValuePair<string, int>> displayableOres = new List<KeyValuePair<string, int>>();
+            foreach (KeyValuePair<string, int> orePair in oreForDisplay)
+            {
+                if (orePair.Key != "Stone")  // Exclude Stone from display
+                {
+                    displayableOres.Add(orePair);
+                }
+            }
+
+            return displayableOres;
         }
 
         void LogInfo(IMyTextSurface panel, bool staticScreen = false)
         {
-            WriteToLCD(logData, panel);
+            string debugInfo = "***** [OFP DEBUG INFO] *****";
+            
+            // Menu and Navigation State
+            debugInfo += $"\nLast Command: {lastCommand}";
+            debugInfo += $"\nCurrent Screen: {currentScreen}";
+            debugInfo += $"\nCurrent Selection: {currentSelection}";
+            debugInfo += $"\nCurrent Ignore Selection: {currentIgnoreSelection}";
+            debugInfo += $"\nMax Ignore Selection: {maxIgnoreSelection}";
+            debugInfo += $"\nSet Distance Mode: {setDistance}";
+            debugInfo += $"\nCurrent Deposit Filter: {currentDepositFilter}";
+            debugInfo += $"\nMax Deposit Filter: {maxDepositFilter}";
+            
+            // Ignore List Information
+            debugInfo += $"\n--- IGNORE LIST INFO ---";
+            debugInfo += $"\nIgnore List: [{ignoreList}]";
+            debugInfo += $"\nIgnored List Count: {ignoredOreTypes.Count}";
+            debugInfo += $"\nIgnored Ores: [{string.Join(",", ignoredOreTypes)}]";
+            try
+            {
+                debugInfo += $"\nDetector Blacklist: [{detector.GetValue<string>("OreBlacklist")}]";
+            }
+            catch
+            {
+                debugInfo += $"\nDetector Blacklist: [ERROR READING]";
+            }
+            debugInfo += $"\nLast Toggle Action: {lastToggleAction}";
+            
+            // Discovered Ore Types (excluding Stone)
+            debugInfo += $"\n--- DISCOVERED ORE TYPES ---";
+            debugInfo += $"\nCount: {discoveredOreTypes.Count}";
+            for (int i = 0; i < discoveredOreTypes.Count; i++)
+            {
+                string oreType = discoveredOreTypes[i];
+                bool isIgnored = IsOreIgnored(oreType);
+                string marker = (i == currentIgnoreSelection) ? ">" : " ";
+                debugInfo += $"\n{marker} [{(isIgnored ? "X" : " ")}] {oreType}";
+            }
+            
+            // Display order for deposits screen
+            debugInfo += $"\n--- DISPLAY ORDER ---";
+            List<KeyValuePair<string, int>> displayableOres = GetDisplayableOres();
+            for (int i = 0; i < displayableOres.Count; i++)
+            {
+                string marker = (i == currentDepositFilter) ? ">" : " ";
+                debugInfo += $"\n{marker} {i}: {displayableOres[i].Key}";
+            }
+            
+            // Filter and Discovery State
+            debugInfo += $"\n--- ORE FILTER STATE ---";
+            foreach (KeyValuePair<string, bool> filter in oreFilter)
+            {
+                debugInfo += $"\n{filter.Key}: {filter.Value}";
+            }
+            
+            debugInfo += $"\n--- DISCOVERY COUNTS ---";
+            debugInfo += $"\nDiscovered Ore: {DiscoveredOre.Count}";
+            debugInfo += $"\nFiltered Ore: {FilteredOre.Count}";
+            
+            // Original log data
+            if (!string.IsNullOrEmpty(logData))
+            {
+                debugInfo += $"\n--- ORIGINAL LOG DATA ---";
+                debugInfo += $"\n{logData}";
+            }
+            
+            if (!staticScreen)
+                debugInfo += "\n> Return To Menu";
+                
+            WriteToLCD(debugInfo, panel);
         }
 
         void ClearLCD()
@@ -534,6 +686,7 @@
                     currentScreen = 8;
                     currentSelection = 1;
                     currentIgnoreSelection = 0;
+                    logData += $"\nNavigated to Ignore Add/Remove screen";
                     break;
                 case (7):
                     //Return to main menu
@@ -553,7 +706,10 @@
             if (currentIgnoreSelection < discoveredOreTypes.Count)
             {
                 string selectedOre = discoveredOreTypes[currentIgnoreSelection];
+                logData += $"\nHandleIgnoreMenu: Toggling ore {selectedOre} at index {currentIgnoreSelection}";
+                logData += $"\nBefore Toggle - IsIgnored: {IsOreIgnored(selectedOre)}";
                 ToggleOreIgnored(selectedOre);
+                logData += $"\nAfter Toggle - IsIgnored: {IsOreIgnored(selectedOre)}";
                 RefreshScreens();
             }
             else if (currentIgnoreSelection == discoveredOreTypes.Count)
@@ -561,12 +717,14 @@
                 // Return to settings menu
                 currentScreen = 5;
                 currentSelection = 1;
+                logData += $"\nHandleIgnoreMenu: Returning to settings menu";
                 RefreshScreens();
             }
         }
         
         void HandleMenu(string cmd)
         {
+            lastCommand = cmd;
             switch (cmd.ToLower())
             {
                 case "screen":
@@ -590,23 +748,22 @@
                             }
                             else
                             {
-                                int x = 0;
+                                // Use the same displayable ores logic as the display method
+                                List<KeyValuePair<string, int>> displayableOres = GetDisplayableOres();
+                                
                                 try
                                 {
-                                    foreach (KeyValuePair<string, bool> ore in oreFilter)
+                                    if (currentDepositFilter < displayableOres.Count)
                                     {
-                                        logData += $"\nx={x} currentDepositFilter={currentDepositFilter} ore.Key={ore.Key} ore.Value={ore.Value}";
-                                        if (x == currentDepositFilter)
-                                        {
-                                            oreFilter[ore.Key] = !ore.Value;
-                                            RefreshFilteredOreList();
-                                        }
-                                        x++;
+                                        string selectedOre = displayableOres[currentDepositFilter].Key;
+                                        oreFilter[selectedOre] = !oreFilter[selectedOre];
+                                        RefreshFilteredOreList();
+                                        logData += $"\nToggled display filter for {selectedOre} to {oreFilter[selectedOre]} at display index {currentDepositFilter}";
                                     }
                                 }
                                 catch (Exception e)
                                 {
-                                    //logData += $"\nError: {e.Message}";
+                                    logData += $"\nError in display filter toggle: {e.Message}";
                                 }
                             }
                             break;
@@ -633,6 +790,7 @@
                             break;
                         case (8):
                             //Handle ignore add/remove screen
+                            logData += $"\nApply command on ignore screen, currentIgnoreSelection={currentIgnoreSelection}, discoveredOreTypes.Count={discoveredOreTypes.Count}";
                             HandleIgnoreMenu();
                             break;
                         default:
@@ -693,6 +851,7 @@
                             if (currentIgnoreSelection > 0)
                             {
                                 currentIgnoreSelection--;
+                                logData += $"\nUp command on ignore screen, new selection={currentIgnoreSelection}";
                             }
                             break;
                     }
@@ -743,6 +902,7 @@
                             if (currentIgnoreSelection < maxIgnoreSelection)
                             {
                                 currentIgnoreSelection++;
+                                logData += $"\nDown command on ignore screen, new selection={currentIgnoreSelection}";
                             }
                             break;
                     }
@@ -782,7 +942,7 @@
                     currentScreen = 0;
                     break;
             }
-            logData = $"cmd={cmd} currentScreen={currentScreen} currentDepositFilter={currentDepositFilter}";
+            logData += $"\nHandleMenu: cmd={cmd} currentScreen={currentScreen} currentDepositFilter={currentDepositFilter}";
             RefreshScreens();
         }
 
@@ -1000,6 +1160,9 @@
                 panel.Alignment = TextAlignment.LEFT;
                 scanMiniStatus = $"{OFPScanMode[0]}";
                 scanMiniStatus += $"\nCharge:{detector.GetValue<double>("AvailableScanRange")}";
+
+                // Add debug info for scan mode 0
+                scanMiniStatus += $"\nDebug: Forward={detector.GetPosition() + detector.WorldMatrix.Forward * detectionDistance}";
             }
 
 
@@ -1060,6 +1223,7 @@
             {
                 ignoreMenu += "\nNo ore types discovered yet.";
                 ignoreMenu += "\nScan some ore first!";
+                ignoreMenu += "\n(Stone is always ignored)";
             }
             else
             {
@@ -1102,40 +1266,25 @@
         void DisplayDepositsFound(IMyTextSurface panel, bool staticScreen = false)
         {
             string deposits = "***** Ore Depoits *****";
-            //Switching over to a dictionary as the "hard coded" list only works with vanilla SE.  Want to mod this to work with any ore detected.
-            Dictionary<string, int> oreForDisplay = new Dictionary<string, int>();
-
-
-
-
-            foreach (MyDetectedEntityInfo oreInstance in DiscoveredOre)
+            
+            // Use the helper method to get consistent displayable ores
+            List<KeyValuePair<string, int>> displayableOres = GetDisplayableOres();
+            
+            // Update maxDepositFilter but preserve selection if it's on "Return To Menu"
+            int oldMaxDepositFilter = maxDepositFilter;
+            maxDepositFilter = displayableOres.Count();
+            
+            // If the current selection was on "Return to Menu" (which is at the old max), 
+            // update it to the new max to keep it on "Return to Menu"
+            if (currentDepositFilter == oldMaxDepositFilter && oldMaxDepositFilter > 0)
             {
-                if (!oreFilter.ContainsKey(oreInstance.Name))
-                {
-                    oreFilter.Add(oreInstance.Name, true);
-                }
-
-                string oreKey = oreInstance.Name;
-                if (oreForDisplay.ContainsKey(oreKey))
-                {
-                    int amount = oreForDisplay[oreKey];
-                    amount += 1;
-                    oreForDisplay[oreKey] = amount;
-                }
-                else
-                {
-                    oreForDisplay.Add(oreKey, 1);
-                }
+                currentDepositFilter = maxDepositFilter;
             }
-
-            maxDepositFilter = oreForDisplay.Count();
-            //Echo($"Deposit Count: {oreForDisplay.Count()}");
 
             if (!staticScreen)
             {
                 int x = 0;
-
-                foreach (KeyValuePair<string, int> orePair in oreForDisplay)
+                foreach (KeyValuePair<string, int> orePair in displayableOres)
                 {
                     string selected = (oreFilter[orePair.Key]) ? "X" : " ";
                     if (x == currentDepositFilter)
@@ -1148,11 +1297,11 @@
                     }
                     x++;
                 }
-                deposits += (currentDepositFilter == oreForDisplay.Count()) ? "\n> Return To Menu" : "\n  Return To Menu";
+                deposits += (currentDepositFilter == displayableOres.Count()) ? "\n> Return To Menu" : "\n  Return To Menu";
             }
             else
             {
-                foreach (KeyValuePair<string, int> orePair in oreForDisplay)
+                foreach (KeyValuePair<string, int> orePair in displayableOres)
                 {
                     deposits += $"\n{orePair.Key}={orePair.Value}";
                 }
@@ -1176,6 +1325,16 @@
             discoveredOreTypes = new List<string>();
             maxIgnoreSelection = 0;
             currentIgnoreSelection = 0;
+            
+            // Clear the reliable ignore storage and reset to Stone only
+            ignoredOreTypes = new List<string>();
+            ignoreList = "Stone";  // Reset to default
+            InitializeIgnoreList();  // Reinitialize from the reset ignore list
+            
+            // Clear debug data
+            logData = "";
+            lastCommand = "";
+            lastToggleAction = "";
             
             RefreshFilteredOreList();
 
